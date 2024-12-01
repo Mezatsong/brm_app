@@ -11,9 +11,13 @@ class $SheepTableTable extends SheepTable
   $SheepTableTable(this.attachedDatabase, [this._alias]);
   static const VerificationMeta _idMeta = const VerificationMeta('id');
   @override
-  late final GeneratedColumn<String> id = GeneratedColumn<String>(
+  late final GeneratedColumn<int> id = GeneratedColumn<int>(
       'id', aliasedName, false,
-      type: DriftSqlType.string, requiredDuringInsert: true);
+      hasAutoIncrement: true,
+      type: DriftSqlType.int,
+      requiredDuringInsert: false,
+      defaultConstraints:
+          GeneratedColumn.constraintIsAlways('PRIMARY KEY AUTOINCREMENT'));
   static const VerificationMeta _nameMeta = const VerificationMeta('name');
   @override
   late final GeneratedColumn<String> name = GeneratedColumn<String>(
@@ -25,12 +29,15 @@ class $SheepTableTable extends SheepTable
   late final GeneratedColumn<String> phoneNumber = GeneratedColumn<String>(
       'phone_number', aliasedName, false,
       type: DriftSqlType.string, requiredDuringInsert: true);
-  static const VerificationMeta _whatsappNumberMeta =
-      const VerificationMeta('whatsappNumber');
+  static const VerificationMeta _isWhatsAppNumberMeta =
+      const VerificationMeta('isWhatsAppNumber');
   @override
-  late final GeneratedColumn<String> whatsappNumber = GeneratedColumn<String>(
-      'whatsapp_number', aliasedName, true,
-      type: DriftSqlType.string, requiredDuringInsert: false);
+  late final GeneratedColumn<bool> isWhatsAppNumber = GeneratedColumn<bool>(
+      'is_whats_app_number', aliasedName, false,
+      type: DriftSqlType.bool,
+      requiredDuringInsert: true,
+      defaultConstraints: GeneratedColumn.constraintIsAlways(
+          'CHECK ("is_whats_app_number" IN (0, 1))'));
   static const VerificationMeta _ageMeta = const VerificationMeta('age');
   @override
   late final GeneratedColumn<int> age = GeneratedColumn<int>(
@@ -129,7 +136,7 @@ class $SheepTableTable extends SheepTable
         id,
         name,
         phoneNumber,
-        whatsappNumber,
+        isWhatsAppNumber,
         age,
         address,
         providerName,
@@ -159,8 +166,6 @@ class $SheepTableTable extends SheepTable
     final data = instance.toColumns(true);
     if (data.containsKey('id')) {
       context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
-    } else if (isInserting) {
-      context.missing(_idMeta);
     }
     if (data.containsKey('name')) {
       context.handle(
@@ -176,11 +181,13 @@ class $SheepTableTable extends SheepTable
     } else if (isInserting) {
       context.missing(_phoneNumberMeta);
     }
-    if (data.containsKey('whatsapp_number')) {
+    if (data.containsKey('is_whats_app_number')) {
       context.handle(
-          _whatsappNumberMeta,
-          whatsappNumber.isAcceptableOrUnknown(
-              data['whatsapp_number']!, _whatsappNumberMeta));
+          _isWhatsAppNumberMeta,
+          isWhatsAppNumber.isAcceptableOrUnknown(
+              data['is_whats_app_number']!, _isWhatsAppNumberMeta));
+    } else if (isInserting) {
+      context.missing(_isWhatsAppNumberMeta);
     }
     if (data.containsKey('age')) {
       context.handle(
@@ -302,17 +309,21 @@ class $SheepTableTable extends SheepTable
   @override
   Set<GeneratedColumn> get $primaryKey => {id};
   @override
+  List<Set<GeneratedColumn>> get uniqueKeys => [
+        {name, phoneNumber},
+      ];
+  @override
   SheepTableData map(Map<String, dynamic> data, {String? tablePrefix}) {
     final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
     return SheepTableData(
       id: attachedDatabase.typeMapping
-          .read(DriftSqlType.string, data['${effectivePrefix}id'])!,
+          .read(DriftSqlType.int, data['${effectivePrefix}id'])!,
       name: attachedDatabase.typeMapping
           .read(DriftSqlType.string, data['${effectivePrefix}name'])!,
       phoneNumber: attachedDatabase.typeMapping
           .read(DriftSqlType.string, data['${effectivePrefix}phone_number'])!,
-      whatsappNumber: attachedDatabase.typeMapping
-          .read(DriftSqlType.string, data['${effectivePrefix}whatsapp_number']),
+      isWhatsAppNumber: attachedDatabase.typeMapping.read(
+          DriftSqlType.bool, data['${effectivePrefix}is_whats_app_number'])!,
       age: attachedDatabase.typeMapping
           .read(DriftSqlType.int, data['${effectivePrefix}age'])!,
       address: attachedDatabase.typeMapping
@@ -356,10 +367,10 @@ class $SheepTableTable extends SheepTable
 }
 
 class SheepTableData extends DataClass implements Insertable<SheepTableData> {
-  final String id;
+  final int id;
   final String name;
   final String phoneNumber;
-  final String? whatsappNumber;
+  final bool isWhatsAppNumber;
   final int age;
   final String address;
   final String providerName;
@@ -380,7 +391,7 @@ class SheepTableData extends DataClass implements Insertable<SheepTableData> {
       {required this.id,
       required this.name,
       required this.phoneNumber,
-      this.whatsappNumber,
+      required this.isWhatsAppNumber,
       required this.age,
       required this.address,
       required this.providerName,
@@ -400,12 +411,10 @@ class SheepTableData extends DataClass implements Insertable<SheepTableData> {
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
-    map['id'] = Variable<String>(id);
+    map['id'] = Variable<int>(id);
     map['name'] = Variable<String>(name);
     map['phone_number'] = Variable<String>(phoneNumber);
-    if (!nullToAbsent || whatsappNumber != null) {
-      map['whatsapp_number'] = Variable<String>(whatsappNumber);
-    }
+    map['is_whats_app_number'] = Variable<bool>(isWhatsAppNumber);
     map['age'] = Variable<int>(age);
     map['address'] = Variable<String>(address);
     map['provider_name'] = Variable<String>(providerName);
@@ -434,9 +443,7 @@ class SheepTableData extends DataClass implements Insertable<SheepTableData> {
       id: Value(id),
       name: Value(name),
       phoneNumber: Value(phoneNumber),
-      whatsappNumber: whatsappNumber == null && nullToAbsent
-          ? const Value.absent()
-          : Value(whatsappNumber),
+      isWhatsAppNumber: Value(isWhatsAppNumber),
       age: Value(age),
       address: Value(address),
       providerName: Value(providerName),
@@ -464,10 +471,10 @@ class SheepTableData extends DataClass implements Insertable<SheepTableData> {
       {ValueSerializer? serializer}) {
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return SheepTableData(
-      id: serializer.fromJson<String>(json['id']),
+      id: serializer.fromJson<int>(json['id']),
       name: serializer.fromJson<String>(json['name']),
       phoneNumber: serializer.fromJson<String>(json['phoneNumber']),
-      whatsappNumber: serializer.fromJson<String?>(json['whatsappNumber']),
+      isWhatsAppNumber: serializer.fromJson<bool>(json['isWhatsAppNumber']),
       age: serializer.fromJson<int>(json['age']),
       address: serializer.fromJson<String>(json['address']),
       providerName: serializer.fromJson<String>(json['providerName']),
@@ -492,10 +499,10 @@ class SheepTableData extends DataClass implements Insertable<SheepTableData> {
   Map<String, dynamic> toJson({ValueSerializer? serializer}) {
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return <String, dynamic>{
-      'id': serializer.toJson<String>(id),
+      'id': serializer.toJson<int>(id),
       'name': serializer.toJson<String>(name),
       'phoneNumber': serializer.toJson<String>(phoneNumber),
-      'whatsappNumber': serializer.toJson<String?>(whatsappNumber),
+      'isWhatsAppNumber': serializer.toJson<bool>(isWhatsAppNumber),
       'age': serializer.toJson<int>(age),
       'address': serializer.toJson<String>(address),
       'providerName': serializer.toJson<String>(providerName),
@@ -516,10 +523,10 @@ class SheepTableData extends DataClass implements Insertable<SheepTableData> {
   }
 
   SheepTableData copyWith(
-          {String? id,
+          {int? id,
           String? name,
           String? phoneNumber,
-          Value<String?> whatsappNumber = const Value.absent(),
+          bool? isWhatsAppNumber,
           int? age,
           String? address,
           String? providerName,
@@ -540,8 +547,7 @@ class SheepTableData extends DataClass implements Insertable<SheepTableData> {
         id: id ?? this.id,
         name: name ?? this.name,
         phoneNumber: phoneNumber ?? this.phoneNumber,
-        whatsappNumber:
-            whatsappNumber.present ? whatsappNumber.value : this.whatsappNumber,
+        isWhatsAppNumber: isWhatsAppNumber ?? this.isWhatsAppNumber,
         age: age ?? this.age,
         address: address ?? this.address,
         providerName: providerName ?? this.providerName,
@@ -567,9 +573,9 @@ class SheepTableData extends DataClass implements Insertable<SheepTableData> {
       name: data.name.present ? data.name.value : this.name,
       phoneNumber:
           data.phoneNumber.present ? data.phoneNumber.value : this.phoneNumber,
-      whatsappNumber: data.whatsappNumber.present
-          ? data.whatsappNumber.value
-          : this.whatsappNumber,
+      isWhatsAppNumber: data.isWhatsAppNumber.present
+          ? data.isWhatsAppNumber.value
+          : this.isWhatsAppNumber,
       age: data.age.present ? data.age.value : this.age,
       address: data.address.present ? data.address.value : this.address,
       providerName: data.providerName.present
@@ -615,7 +621,7 @@ class SheepTableData extends DataClass implements Insertable<SheepTableData> {
           ..write('id: $id, ')
           ..write('name: $name, ')
           ..write('phoneNumber: $phoneNumber, ')
-          ..write('whatsappNumber: $whatsappNumber, ')
+          ..write('isWhatsAppNumber: $isWhatsAppNumber, ')
           ..write('age: $age, ')
           ..write('address: $address, ')
           ..write('providerName: $providerName, ')
@@ -641,7 +647,7 @@ class SheepTableData extends DataClass implements Insertable<SheepTableData> {
       id,
       name,
       phoneNumber,
-      whatsappNumber,
+      isWhatsAppNumber,
       age,
       address,
       providerName,
@@ -665,7 +671,7 @@ class SheepTableData extends DataClass implements Insertable<SheepTableData> {
           other.id == this.id &&
           other.name == this.name &&
           other.phoneNumber == this.phoneNumber &&
-          other.whatsappNumber == this.whatsappNumber &&
+          other.isWhatsAppNumber == this.isWhatsAppNumber &&
           other.age == this.age &&
           other.address == this.address &&
           other.providerName == this.providerName &&
@@ -685,10 +691,10 @@ class SheepTableData extends DataClass implements Insertable<SheepTableData> {
 }
 
 class SheepTableCompanion extends UpdateCompanion<SheepTableData> {
-  final Value<String> id;
+  final Value<int> id;
   final Value<String> name;
   final Value<String> phoneNumber;
-  final Value<String?> whatsappNumber;
+  final Value<bool> isWhatsAppNumber;
   final Value<int> age;
   final Value<String> address;
   final Value<String> providerName;
@@ -705,12 +711,11 @@ class SheepTableCompanion extends UpdateCompanion<SheepTableData> {
   final Value<int> wateringSessionsDone;
   final Value<String?> abandonReason;
   final Value<String?> abandonDetails;
-  final Value<int> rowid;
   const SheepTableCompanion({
     this.id = const Value.absent(),
     this.name = const Value.absent(),
     this.phoneNumber = const Value.absent(),
-    this.whatsappNumber = const Value.absent(),
+    this.isWhatsAppNumber = const Value.absent(),
     this.age = const Value.absent(),
     this.address = const Value.absent(),
     this.providerName = const Value.absent(),
@@ -727,13 +732,12 @@ class SheepTableCompanion extends UpdateCompanion<SheepTableData> {
     this.wateringSessionsDone = const Value.absent(),
     this.abandonReason = const Value.absent(),
     this.abandonDetails = const Value.absent(),
-    this.rowid = const Value.absent(),
   });
   SheepTableCompanion.insert({
-    required String id,
+    this.id = const Value.absent(),
     required String name,
     required String phoneNumber,
-    this.whatsappNumber = const Value.absent(),
+    required bool isWhatsAppNumber,
     required int age,
     required String address,
     required String providerName,
@@ -750,10 +754,9 @@ class SheepTableCompanion extends UpdateCompanion<SheepTableData> {
     required int wateringSessionsDone,
     this.abandonReason = const Value.absent(),
     this.abandonDetails = const Value.absent(),
-    this.rowid = const Value.absent(),
-  })  : id = Value(id),
-        name = Value(name),
+  })  : name = Value(name),
         phoneNumber = Value(phoneNumber),
+        isWhatsAppNumber = Value(isWhatsAppNumber),
         age = Value(age),
         address = Value(address),
         providerName = Value(providerName),
@@ -769,10 +772,10 @@ class SheepTableCompanion extends UpdateCompanion<SheepTableData> {
         sessionsDone = Value(sessionsDone),
         wateringSessionsDone = Value(wateringSessionsDone);
   static Insertable<SheepTableData> custom({
-    Expression<String>? id,
+    Expression<int>? id,
     Expression<String>? name,
     Expression<String>? phoneNumber,
-    Expression<String>? whatsappNumber,
+    Expression<bool>? isWhatsAppNumber,
     Expression<int>? age,
     Expression<String>? address,
     Expression<String>? providerName,
@@ -789,13 +792,12 @@ class SheepTableCompanion extends UpdateCompanion<SheepTableData> {
     Expression<int>? wateringSessionsDone,
     Expression<String>? abandonReason,
     Expression<String>? abandonDetails,
-    Expression<int>? rowid,
   }) {
     return RawValuesInsertable({
       if (id != null) 'id': id,
       if (name != null) 'name': name,
       if (phoneNumber != null) 'phone_number': phoneNumber,
-      if (whatsappNumber != null) 'whatsapp_number': whatsappNumber,
+      if (isWhatsAppNumber != null) 'is_whats_app_number': isWhatsAppNumber,
       if (age != null) 'age': age,
       if (address != null) 'address': address,
       if (providerName != null) 'provider_name': providerName,
@@ -814,15 +816,14 @@ class SheepTableCompanion extends UpdateCompanion<SheepTableData> {
         'watering_sessions_done': wateringSessionsDone,
       if (abandonReason != null) 'abandon_reason': abandonReason,
       if (abandonDetails != null) 'abandon_details': abandonDetails,
-      if (rowid != null) 'rowid': rowid,
     });
   }
 
   SheepTableCompanion copyWith(
-      {Value<String>? id,
+      {Value<int>? id,
       Value<String>? name,
       Value<String>? phoneNumber,
-      Value<String?>? whatsappNumber,
+      Value<bool>? isWhatsAppNumber,
       Value<int>? age,
       Value<String>? address,
       Value<String>? providerName,
@@ -838,13 +839,12 @@ class SheepTableCompanion extends UpdateCompanion<SheepTableData> {
       Value<int>? sessionsDone,
       Value<int>? wateringSessionsDone,
       Value<String?>? abandonReason,
-      Value<String?>? abandonDetails,
-      Value<int>? rowid}) {
+      Value<String?>? abandonDetails}) {
     return SheepTableCompanion(
       id: id ?? this.id,
       name: name ?? this.name,
       phoneNumber: phoneNumber ?? this.phoneNumber,
-      whatsappNumber: whatsappNumber ?? this.whatsappNumber,
+      isWhatsAppNumber: isWhatsAppNumber ?? this.isWhatsAppNumber,
       age: age ?? this.age,
       address: address ?? this.address,
       providerName: providerName ?? this.providerName,
@@ -861,7 +861,6 @@ class SheepTableCompanion extends UpdateCompanion<SheepTableData> {
       wateringSessionsDone: wateringSessionsDone ?? this.wateringSessionsDone,
       abandonReason: abandonReason ?? this.abandonReason,
       abandonDetails: abandonDetails ?? this.abandonDetails,
-      rowid: rowid ?? this.rowid,
     );
   }
 
@@ -869,7 +868,7 @@ class SheepTableCompanion extends UpdateCompanion<SheepTableData> {
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
     if (id.present) {
-      map['id'] = Variable<String>(id.value);
+      map['id'] = Variable<int>(id.value);
     }
     if (name.present) {
       map['name'] = Variable<String>(name.value);
@@ -877,8 +876,8 @@ class SheepTableCompanion extends UpdateCompanion<SheepTableData> {
     if (phoneNumber.present) {
       map['phone_number'] = Variable<String>(phoneNumber.value);
     }
-    if (whatsappNumber.present) {
-      map['whatsapp_number'] = Variable<String>(whatsappNumber.value);
+    if (isWhatsAppNumber.present) {
+      map['is_whats_app_number'] = Variable<bool>(isWhatsAppNumber.value);
     }
     if (age.present) {
       map['age'] = Variable<int>(age.value);
@@ -929,9 +928,6 @@ class SheepTableCompanion extends UpdateCompanion<SheepTableData> {
     if (abandonDetails.present) {
       map['abandon_details'] = Variable<String>(abandonDetails.value);
     }
-    if (rowid.present) {
-      map['rowid'] = Variable<int>(rowid.value);
-    }
     return map;
   }
 
@@ -941,7 +937,7 @@ class SheepTableCompanion extends UpdateCompanion<SheepTableData> {
           ..write('id: $id, ')
           ..write('name: $name, ')
           ..write('phoneNumber: $phoneNumber, ')
-          ..write('whatsappNumber: $whatsappNumber, ')
+          ..write('isWhatsAppNumber: $isWhatsAppNumber, ')
           ..write('age: $age, ')
           ..write('address: $address, ')
           ..write('providerName: $providerName, ')
@@ -957,8 +953,7 @@ class SheepTableCompanion extends UpdateCompanion<SheepTableData> {
           ..write('sessionsDone: $sessionsDone, ')
           ..write('wateringSessionsDone: $wateringSessionsDone, ')
           ..write('abandonReason: $abandonReason, ')
-          ..write('abandonDetails: $abandonDetails, ')
-          ..write('rowid: $rowid')
+          ..write('abandonDetails: $abandonDetails')
           ..write(')'))
         .toString();
   }
@@ -972,15 +967,19 @@ class $SessionTableTable extends SessionTable
   $SessionTableTable(this.attachedDatabase, [this._alias]);
   static const VerificationMeta _idMeta = const VerificationMeta('id');
   @override
-  late final GeneratedColumn<String> id = GeneratedColumn<String>(
+  late final GeneratedColumn<int> id = GeneratedColumn<int>(
       'id', aliasedName, false,
-      type: DriftSqlType.string, requiredDuringInsert: true);
+      hasAutoIncrement: true,
+      type: DriftSqlType.int,
+      requiredDuringInsert: false,
+      defaultConstraints:
+          GeneratedColumn.constraintIsAlways('PRIMARY KEY AUTOINCREMENT'));
   static const VerificationMeta _sheepIdMeta =
       const VerificationMeta('sheepId');
   @override
-  late final GeneratedColumn<String> sheepId = GeneratedColumn<String>(
+  late final GeneratedColumn<int> sheepId = GeneratedColumn<int>(
       'sheep_id', aliasedName, false,
-      type: DriftSqlType.string, requiredDuringInsert: true);
+      type: DriftSqlType.int, requiredDuringInsert: true);
   static const VerificationMeta _appointmentDateMeta =
       const VerificationMeta('appointmentDate');
   @override
@@ -1041,8 +1040,6 @@ class $SessionTableTable extends SessionTable
     final data = instance.toColumns(true);
     if (data.containsKey('id')) {
       context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
-    } else if (isInserting) {
-      context.missing(_idMeta);
     }
     if (data.containsKey('sheep_id')) {
       context.handle(_sheepIdMeta,
@@ -1098,9 +1095,9 @@ class $SessionTableTable extends SessionTable
     final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
     return SessionTableData(
       id: attachedDatabase.typeMapping
-          .read(DriftSqlType.string, data['${effectivePrefix}id'])!,
+          .read(DriftSqlType.int, data['${effectivePrefix}id'])!,
       sheepId: attachedDatabase.typeMapping
-          .read(DriftSqlType.string, data['${effectivePrefix}sheep_id'])!,
+          .read(DriftSqlType.int, data['${effectivePrefix}sheep_id'])!,
       appointmentDate: attachedDatabase.typeMapping.read(
           DriftSqlType.dateTime, data['${effectivePrefix}appointment_date'])!,
       type: attachedDatabase.typeMapping
@@ -1124,8 +1121,8 @@ class $SessionTableTable extends SessionTable
 
 class SessionTableData extends DataClass
     implements Insertable<SessionTableData> {
-  final String id;
-  final String sheepId;
+  final int id;
+  final int sheepId;
   final DateTime appointmentDate;
   final String type;
   final int sessionNumber;
@@ -1144,8 +1141,8 @@ class SessionTableData extends DataClass
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
-    map['id'] = Variable<String>(id);
-    map['sheep_id'] = Variable<String>(sheepId);
+    map['id'] = Variable<int>(id);
+    map['sheep_id'] = Variable<int>(sheepId);
     map['appointment_date'] = Variable<DateTime>(appointmentDate);
     map['type'] = Variable<String>(type);
     map['session_number'] = Variable<int>(sessionNumber);
@@ -1179,8 +1176,8 @@ class SessionTableData extends DataClass
       {ValueSerializer? serializer}) {
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return SessionTableData(
-      id: serializer.fromJson<String>(json['id']),
-      sheepId: serializer.fromJson<String>(json['sheepId']),
+      id: serializer.fromJson<int>(json['id']),
+      sheepId: serializer.fromJson<int>(json['sheepId']),
       appointmentDate: serializer.fromJson<DateTime>(json['appointmentDate']),
       type: serializer.fromJson<String>(json['type']),
       sessionNumber: serializer.fromJson<int>(json['sessionNumber']),
@@ -1193,8 +1190,8 @@ class SessionTableData extends DataClass
   Map<String, dynamic> toJson({ValueSerializer? serializer}) {
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return <String, dynamic>{
-      'id': serializer.toJson<String>(id),
-      'sheepId': serializer.toJson<String>(sheepId),
+      'id': serializer.toJson<int>(id),
+      'sheepId': serializer.toJson<int>(sheepId),
       'appointmentDate': serializer.toJson<DateTime>(appointmentDate),
       'type': serializer.toJson<String>(type),
       'sessionNumber': serializer.toJson<int>(sessionNumber),
@@ -1205,8 +1202,8 @@ class SessionTableData extends DataClass
   }
 
   SessionTableData copyWith(
-          {String? id,
-          String? sheepId,
+          {int? id,
+          int? sheepId,
           DateTime? appointmentDate,
           String? type,
           int? sessionNumber,
@@ -1274,15 +1271,14 @@ class SessionTableData extends DataClass
 }
 
 class SessionTableCompanion extends UpdateCompanion<SessionTableData> {
-  final Value<String> id;
-  final Value<String> sheepId;
+  final Value<int> id;
+  final Value<int> sheepId;
   final Value<DateTime> appointmentDate;
   final Value<String> type;
   final Value<int> sessionNumber;
   final Value<String?> notes;
   final Value<bool> completed;
   final Value<DateTime?> completedAt;
-  final Value<int> rowid;
   const SessionTableCompanion({
     this.id = const Value.absent(),
     this.sheepId = const Value.absent(),
@@ -1292,34 +1288,30 @@ class SessionTableCompanion extends UpdateCompanion<SessionTableData> {
     this.notes = const Value.absent(),
     this.completed = const Value.absent(),
     this.completedAt = const Value.absent(),
-    this.rowid = const Value.absent(),
   });
   SessionTableCompanion.insert({
-    required String id,
-    required String sheepId,
+    this.id = const Value.absent(),
+    required int sheepId,
     required DateTime appointmentDate,
     required String type,
     required int sessionNumber,
     this.notes = const Value.absent(),
     required bool completed,
     this.completedAt = const Value.absent(),
-    this.rowid = const Value.absent(),
-  })  : id = Value(id),
-        sheepId = Value(sheepId),
+  })  : sheepId = Value(sheepId),
         appointmentDate = Value(appointmentDate),
         type = Value(type),
         sessionNumber = Value(sessionNumber),
         completed = Value(completed);
   static Insertable<SessionTableData> custom({
-    Expression<String>? id,
-    Expression<String>? sheepId,
+    Expression<int>? id,
+    Expression<int>? sheepId,
     Expression<DateTime>? appointmentDate,
     Expression<String>? type,
     Expression<int>? sessionNumber,
     Expression<String>? notes,
     Expression<bool>? completed,
     Expression<DateTime>? completedAt,
-    Expression<int>? rowid,
   }) {
     return RawValuesInsertable({
       if (id != null) 'id': id,
@@ -1330,20 +1322,18 @@ class SessionTableCompanion extends UpdateCompanion<SessionTableData> {
       if (notes != null) 'notes': notes,
       if (completed != null) 'completed': completed,
       if (completedAt != null) 'completed_at': completedAt,
-      if (rowid != null) 'rowid': rowid,
     });
   }
 
   SessionTableCompanion copyWith(
-      {Value<String>? id,
-      Value<String>? sheepId,
+      {Value<int>? id,
+      Value<int>? sheepId,
       Value<DateTime>? appointmentDate,
       Value<String>? type,
       Value<int>? sessionNumber,
       Value<String?>? notes,
       Value<bool>? completed,
-      Value<DateTime?>? completedAt,
-      Value<int>? rowid}) {
+      Value<DateTime?>? completedAt}) {
     return SessionTableCompanion(
       id: id ?? this.id,
       sheepId: sheepId ?? this.sheepId,
@@ -1353,7 +1343,6 @@ class SessionTableCompanion extends UpdateCompanion<SessionTableData> {
       notes: notes ?? this.notes,
       completed: completed ?? this.completed,
       completedAt: completedAt ?? this.completedAt,
-      rowid: rowid ?? this.rowid,
     );
   }
 
@@ -1361,10 +1350,10 @@ class SessionTableCompanion extends UpdateCompanion<SessionTableData> {
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
     if (id.present) {
-      map['id'] = Variable<String>(id.value);
+      map['id'] = Variable<int>(id.value);
     }
     if (sheepId.present) {
-      map['sheep_id'] = Variable<String>(sheepId.value);
+      map['sheep_id'] = Variable<int>(sheepId.value);
     }
     if (appointmentDate.present) {
       map['appointment_date'] = Variable<DateTime>(appointmentDate.value);
@@ -1384,9 +1373,6 @@ class SessionTableCompanion extends UpdateCompanion<SessionTableData> {
     if (completedAt.present) {
       map['completed_at'] = Variable<DateTime>(completedAt.value);
     }
-    if (rowid.present) {
-      map['rowid'] = Variable<int>(rowid.value);
-    }
     return map;
   }
 
@@ -1400,8 +1386,7 @@ class SessionTableCompanion extends UpdateCompanion<SessionTableData> {
           ..write('sessionNumber: $sessionNumber, ')
           ..write('notes: $notes, ')
           ..write('completed: $completed, ')
-          ..write('completedAt: $completedAt, ')
-          ..write('rowid: $rowid')
+          ..write('completedAt: $completedAt')
           ..write(')'))
         .toString();
   }
@@ -1421,10 +1406,10 @@ abstract class _$MyDatabase extends GeneratedDatabase {
 }
 
 typedef $$SheepTableTableCreateCompanionBuilder = SheepTableCompanion Function({
-  required String id,
+  Value<int> id,
   required String name,
   required String phoneNumber,
-  Value<String?> whatsappNumber,
+  required bool isWhatsAppNumber,
   required int age,
   required String address,
   required String providerName,
@@ -1441,13 +1426,12 @@ typedef $$SheepTableTableCreateCompanionBuilder = SheepTableCompanion Function({
   required int wateringSessionsDone,
   Value<String?> abandonReason,
   Value<String?> abandonDetails,
-  Value<int> rowid,
 });
 typedef $$SheepTableTableUpdateCompanionBuilder = SheepTableCompanion Function({
-  Value<String> id,
+  Value<int> id,
   Value<String> name,
   Value<String> phoneNumber,
-  Value<String?> whatsappNumber,
+  Value<bool> isWhatsAppNumber,
   Value<int> age,
   Value<String> address,
   Value<String> providerName,
@@ -1464,7 +1448,6 @@ typedef $$SheepTableTableUpdateCompanionBuilder = SheepTableCompanion Function({
   Value<int> wateringSessionsDone,
   Value<String?> abandonReason,
   Value<String?> abandonDetails,
-  Value<int> rowid,
 });
 
 class $$SheepTableTableFilterComposer
@@ -1476,7 +1459,7 @@ class $$SheepTableTableFilterComposer
     super.$addJoinBuilderToRootComposer,
     super.$removeJoinBuilderFromRootComposer,
   });
-  ColumnFilters<String> get id => $composableBuilder(
+  ColumnFilters<int> get id => $composableBuilder(
       column: $table.id, builder: (column) => ColumnFilters(column));
 
   ColumnFilters<String> get name => $composableBuilder(
@@ -1485,8 +1468,8 @@ class $$SheepTableTableFilterComposer
   ColumnFilters<String> get phoneNumber => $composableBuilder(
       column: $table.phoneNumber, builder: (column) => ColumnFilters(column));
 
-  ColumnFilters<String> get whatsappNumber => $composableBuilder(
-      column: $table.whatsappNumber,
+  ColumnFilters<bool> get isWhatsAppNumber => $composableBuilder(
+      column: $table.isWhatsAppNumber,
       builder: (column) => ColumnFilters(column));
 
   ColumnFilters<int> get age => $composableBuilder(
@@ -1550,7 +1533,7 @@ class $$SheepTableTableOrderingComposer
     super.$addJoinBuilderToRootComposer,
     super.$removeJoinBuilderFromRootComposer,
   });
-  ColumnOrderings<String> get id => $composableBuilder(
+  ColumnOrderings<int> get id => $composableBuilder(
       column: $table.id, builder: (column) => ColumnOrderings(column));
 
   ColumnOrderings<String> get name => $composableBuilder(
@@ -1559,8 +1542,8 @@ class $$SheepTableTableOrderingComposer
   ColumnOrderings<String> get phoneNumber => $composableBuilder(
       column: $table.phoneNumber, builder: (column) => ColumnOrderings(column));
 
-  ColumnOrderings<String> get whatsappNumber => $composableBuilder(
-      column: $table.whatsappNumber,
+  ColumnOrderings<bool> get isWhatsAppNumber => $composableBuilder(
+      column: $table.isWhatsAppNumber,
       builder: (column) => ColumnOrderings(column));
 
   ColumnOrderings<int> get age => $composableBuilder(
@@ -1630,7 +1613,7 @@ class $$SheepTableTableAnnotationComposer
     super.$addJoinBuilderToRootComposer,
     super.$removeJoinBuilderFromRootComposer,
   });
-  GeneratedColumn<String> get id =>
+  GeneratedColumn<int> get id =>
       $composableBuilder(column: $table.id, builder: (column) => column);
 
   GeneratedColumn<String> get name =>
@@ -1639,8 +1622,8 @@ class $$SheepTableTableAnnotationComposer
   GeneratedColumn<String> get phoneNumber => $composableBuilder(
       column: $table.phoneNumber, builder: (column) => column);
 
-  GeneratedColumn<String> get whatsappNumber => $composableBuilder(
-      column: $table.whatsappNumber, builder: (column) => column);
+  GeneratedColumn<bool> get isWhatsAppNumber => $composableBuilder(
+      column: $table.isWhatsAppNumber, builder: (column) => column);
 
   GeneratedColumn<int> get age =>
       $composableBuilder(column: $table.age, builder: (column) => column);
@@ -1717,10 +1700,10 @@ class $$SheepTableTableTableManager extends RootTableManager<
           createComputedFieldComposer: () =>
               $$SheepTableTableAnnotationComposer($db: db, $table: table),
           updateCompanionCallback: ({
-            Value<String> id = const Value.absent(),
+            Value<int> id = const Value.absent(),
             Value<String> name = const Value.absent(),
             Value<String> phoneNumber = const Value.absent(),
-            Value<String?> whatsappNumber = const Value.absent(),
+            Value<bool> isWhatsAppNumber = const Value.absent(),
             Value<int> age = const Value.absent(),
             Value<String> address = const Value.absent(),
             Value<String> providerName = const Value.absent(),
@@ -1737,13 +1720,12 @@ class $$SheepTableTableTableManager extends RootTableManager<
             Value<int> wateringSessionsDone = const Value.absent(),
             Value<String?> abandonReason = const Value.absent(),
             Value<String?> abandonDetails = const Value.absent(),
-            Value<int> rowid = const Value.absent(),
           }) =>
               SheepTableCompanion(
             id: id,
             name: name,
             phoneNumber: phoneNumber,
-            whatsappNumber: whatsappNumber,
+            isWhatsAppNumber: isWhatsAppNumber,
             age: age,
             address: address,
             providerName: providerName,
@@ -1760,13 +1742,12 @@ class $$SheepTableTableTableManager extends RootTableManager<
             wateringSessionsDone: wateringSessionsDone,
             abandonReason: abandonReason,
             abandonDetails: abandonDetails,
-            rowid: rowid,
           ),
           createCompanionCallback: ({
-            required String id,
+            Value<int> id = const Value.absent(),
             required String name,
             required String phoneNumber,
-            Value<String?> whatsappNumber = const Value.absent(),
+            required bool isWhatsAppNumber,
             required int age,
             required String address,
             required String providerName,
@@ -1783,13 +1764,12 @@ class $$SheepTableTableTableManager extends RootTableManager<
             required int wateringSessionsDone,
             Value<String?> abandonReason = const Value.absent(),
             Value<String?> abandonDetails = const Value.absent(),
-            Value<int> rowid = const Value.absent(),
           }) =>
               SheepTableCompanion.insert(
             id: id,
             name: name,
             phoneNumber: phoneNumber,
-            whatsappNumber: whatsappNumber,
+            isWhatsAppNumber: isWhatsAppNumber,
             age: age,
             address: address,
             providerName: providerName,
@@ -1806,7 +1786,6 @@ class $$SheepTableTableTableManager extends RootTableManager<
             wateringSessionsDone: wateringSessionsDone,
             abandonReason: abandonReason,
             abandonDetails: abandonDetails,
-            rowid: rowid,
           ),
           withReferenceMapper: (p0) => p0
               .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
@@ -1832,27 +1811,25 @@ typedef $$SheepTableTableProcessedTableManager = ProcessedTableManager<
     PrefetchHooks Function()>;
 typedef $$SessionTableTableCreateCompanionBuilder = SessionTableCompanion
     Function({
-  required String id,
-  required String sheepId,
+  Value<int> id,
+  required int sheepId,
   required DateTime appointmentDate,
   required String type,
   required int sessionNumber,
   Value<String?> notes,
   required bool completed,
   Value<DateTime?> completedAt,
-  Value<int> rowid,
 });
 typedef $$SessionTableTableUpdateCompanionBuilder = SessionTableCompanion
     Function({
-  Value<String> id,
-  Value<String> sheepId,
+  Value<int> id,
+  Value<int> sheepId,
   Value<DateTime> appointmentDate,
   Value<String> type,
   Value<int> sessionNumber,
   Value<String?> notes,
   Value<bool> completed,
   Value<DateTime?> completedAt,
-  Value<int> rowid,
 });
 
 class $$SessionTableTableFilterComposer
@@ -1864,10 +1841,10 @@ class $$SessionTableTableFilterComposer
     super.$addJoinBuilderToRootComposer,
     super.$removeJoinBuilderFromRootComposer,
   });
-  ColumnFilters<String> get id => $composableBuilder(
+  ColumnFilters<int> get id => $composableBuilder(
       column: $table.id, builder: (column) => ColumnFilters(column));
 
-  ColumnFilters<String> get sheepId => $composableBuilder(
+  ColumnFilters<int> get sheepId => $composableBuilder(
       column: $table.sheepId, builder: (column) => ColumnFilters(column));
 
   ColumnFilters<DateTime> get appointmentDate => $composableBuilder(
@@ -1899,10 +1876,10 @@ class $$SessionTableTableOrderingComposer
     super.$addJoinBuilderToRootComposer,
     super.$removeJoinBuilderFromRootComposer,
   });
-  ColumnOrderings<String> get id => $composableBuilder(
+  ColumnOrderings<int> get id => $composableBuilder(
       column: $table.id, builder: (column) => ColumnOrderings(column));
 
-  ColumnOrderings<String> get sheepId => $composableBuilder(
+  ColumnOrderings<int> get sheepId => $composableBuilder(
       column: $table.sheepId, builder: (column) => ColumnOrderings(column));
 
   ColumnOrderings<DateTime> get appointmentDate => $composableBuilder(
@@ -1935,10 +1912,10 @@ class $$SessionTableTableAnnotationComposer
     super.$addJoinBuilderToRootComposer,
     super.$removeJoinBuilderFromRootComposer,
   });
-  GeneratedColumn<String> get id =>
+  GeneratedColumn<int> get id =>
       $composableBuilder(column: $table.id, builder: (column) => column);
 
-  GeneratedColumn<String> get sheepId =>
+  GeneratedColumn<int> get sheepId =>
       $composableBuilder(column: $table.sheepId, builder: (column) => column);
 
   GeneratedColumn<DateTime> get appointmentDate => $composableBuilder(
@@ -1986,15 +1963,14 @@ class $$SessionTableTableTableManager extends RootTableManager<
           createComputedFieldComposer: () =>
               $$SessionTableTableAnnotationComposer($db: db, $table: table),
           updateCompanionCallback: ({
-            Value<String> id = const Value.absent(),
-            Value<String> sheepId = const Value.absent(),
+            Value<int> id = const Value.absent(),
+            Value<int> sheepId = const Value.absent(),
             Value<DateTime> appointmentDate = const Value.absent(),
             Value<String> type = const Value.absent(),
             Value<int> sessionNumber = const Value.absent(),
             Value<String?> notes = const Value.absent(),
             Value<bool> completed = const Value.absent(),
             Value<DateTime?> completedAt = const Value.absent(),
-            Value<int> rowid = const Value.absent(),
           }) =>
               SessionTableCompanion(
             id: id,
@@ -2005,18 +1981,16 @@ class $$SessionTableTableTableManager extends RootTableManager<
             notes: notes,
             completed: completed,
             completedAt: completedAt,
-            rowid: rowid,
           ),
           createCompanionCallback: ({
-            required String id,
-            required String sheepId,
+            Value<int> id = const Value.absent(),
+            required int sheepId,
             required DateTime appointmentDate,
             required String type,
             required int sessionNumber,
             Value<String?> notes = const Value.absent(),
             required bool completed,
             Value<DateTime?> completedAt = const Value.absent(),
-            Value<int> rowid = const Value.absent(),
           }) =>
               SessionTableCompanion.insert(
             id: id,
@@ -2027,7 +2001,6 @@ class $$SessionTableTableTableManager extends RootTableManager<
             notes: notes,
             completed: completed,
             completedAt: completedAt,
-            rowid: rowid,
           ),
           withReferenceMapper: (p0) => p0
               .map((e) => (e.readTable(table), BaseReferences(db, table, e)))

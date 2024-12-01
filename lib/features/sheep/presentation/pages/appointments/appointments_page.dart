@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_modular/flutter_modular.dart';
 import '../../../../../core/constants/app_strings.dart';
-import '../../cubit/appointments_cubit.dart';
+import 'cubit/appointments_cubit.dart';
 import 'widgets/appointment_list_item.dart';
 
 class AppointmentsPage extends StatelessWidget {
@@ -10,7 +11,10 @@ class AppointmentsPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
-      create: (context) => AppointmentsCubit(context.read())..loadAppointments(),
+      create: (context) => AppointmentsCubit(
+        Modular.get(),
+        Modular.get(),
+      )..loadAppointments(),
       child: Scaffold(
         appBar: AppBar(
           title: const Text(AppStrings.appointments),

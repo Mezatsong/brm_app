@@ -1,8 +1,8 @@
 import 'package:equatable/equatable.dart';
 
 class Session extends Equatable {
-  final String id;
-  final String sheepId;
+  final int id;
+  final int sheepId;
   final DateTime appointmentDate;
   final String type; // witnessing, watering
   final int sessionNumber;
@@ -23,13 +23,13 @@ class Session extends Equatable {
 
   @override
   List<Object?> get props => [
-    id,
-    sheepId,
-    appointmentDate,
-    type,
-    sessionNumber,
-    notes,
-    completed,
-    completedAt,
-  ];
+        id,
+        sheepId,
+        appointmentDate,
+        type,
+        sessionNumber,
+        notes,
+        completed,
+        completedAt,
+      ];
 }

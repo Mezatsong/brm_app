@@ -1,10 +1,10 @@
 part of 'database.dart';
 
 class SheepTable extends Table {
-  TextColumn get id => text()();
+  IntColumn get id => integer().autoIncrement()();
   TextColumn get name => text()();
   TextColumn get phoneNumber => text()();
-  TextColumn get whatsappNumber => text().nullable()();
+  BoolColumn get isWhatsAppNumber => boolean()();
   IntColumn get age => integer()();
   TextColumn get address => text()();
   TextColumn get providerName => text()();
@@ -22,13 +22,19 @@ class SheepTable extends Table {
   TextColumn get abandonReason => text().nullable()();
   TextColumn get abandonDetails => text().nullable()();
 
+  // Since we already put int auto-increment column, it will be reconized as id
+  // @override
+  // Set<Column> get primaryKey => {id};
+
   @override
-  Set<Column> get primaryKey => {id};
+  List<Set<Column>> get uniqueKeys => [
+        {name, phoneNumber}
+      ];
 }
 
 class SessionTable extends Table {
-  TextColumn get id => text()();
-  TextColumn get sheepId => text()();
+  IntColumn get id => integer().autoIncrement()();
+  IntColumn get sheepId => integer()();
   DateTimeColumn get appointmentDate => dateTime()();
   TextColumn get type => text()();
   IntColumn get sessionNumber => integer()();
@@ -36,7 +42,7 @@ class SessionTable extends Table {
   BoolColumn get completed => boolean()();
   DateTimeColumn get completedAt => dateTime().nullable()();
 
-  @override
-  Set<Column> get primaryKey => {id};
+  // Since we already put int auto-increment column, it will be reconized as id
+  // @override
+  // Set<Column> get primaryKey => {id};
 }
-

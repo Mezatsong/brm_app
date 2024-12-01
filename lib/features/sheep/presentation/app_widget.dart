@@ -9,8 +9,10 @@ class AppWidget extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp.router(
       title: 'BRM',
-      theme: AppTheme.light,
+      theme: MyTheme.light,
+      darkTheme: MyTheme.dark,
       routerConfig: Modular.routerConfig,
+      debugShowCheckedModeBanner: false,
     );
   }
 }

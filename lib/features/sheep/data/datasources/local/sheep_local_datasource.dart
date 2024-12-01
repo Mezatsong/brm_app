@@ -1,29 +1,32 @@
 import 'package:drift/drift.dart';
 import '../../../../../core/error/failures.dart';
+import '../../../domain/entities/sheep.dart';
 import '../../models/sheep_model.dart';
 import '../../models/session_model.dart';
 import 'drift/database.dart';
 
 abstract class SheepLocalDataSource {
   Future<List<SheepModel>> getAllSheep();
-  Future<SheepModel> getSheepById(String id);
+  Future<SheepModel> getSheepById(int id);
   Future<void> addSheep(SheepModel sheep);
   Future<void> updateSheep(SheepModel sheep);
-  Future<void> abandonSheep(String id, String reason, String details);
-  Future<List<SessionModel>> getSheepSessions(String sheepId);
+  Future<void> abandonSheep(int id, String reason, String details);
+  Future<List<SessionModel>> getSheepSessions(int sheepId);
   Future<void> addSession(SessionModel session);
   Future<void> updateSession(SessionModel session);
 }
 
 class SheepLocalDataSourceImpl implements SheepLocalDataSource {
-  final MyDatabase database;
+  final MyDatabase db;
 
-  SheepLocalDataSourceImpl(this.database);
+  SheepLocalDataSourceImpl(this.db);
 
   @override
   Future<List<SheepModel>> getAllSheep() async {
     try {
-      final sheepEntries = await database.select(database.sheepTable).get();
+      final sheepEntries = await (db.select(db.sheepTable)
+            ..orderBy([(s) => OrderingTerm.desc(s.createdAt)]))
+          .get();
       return sheepEntries.map((sheep) => _convertToSheepModel(sheep)).toList();
     } catch (e) {
       throw DatabaseFailure(e.toString());
@@ -31,9 +34,9 @@ class SheepLocalDataSourceImpl implements SheepLocalDataSource {
   }
 
   @override
-  Future<SheepModel> getSheepById(String id) async {
+  Future<SheepModel> getSheepById(int id) async {
     try {
-      final sheep = await (database.select(database.sheepTable)
+      final sheep = await (db.select(db.sheepTable)
             ..where((tbl) => tbl.id.equals(id)))
           .getSingle();
       return _convertToSheepModel(sheep);
@@ -45,12 +48,11 @@ class SheepLocalDataSourceImpl implements SheepLocalDataSource {
   @override
   Future<void> addSheep(SheepModel sheep) async {
     try {
-      await database.into(database.sheepTable).insert(
+      await db.into(db.sheepTable).insert(
             SheepTableCompanion.insert(
-              id: sheep.id,
               name: sheep.name,
               phoneNumber: sheep.phoneNumber,
-              whatsappNumber: Value(sheep.whatsappNumber),
+              isWhatsAppNumber: sheep.isWhatsAppNumber,
               age: sheep.age,
               address: sheep.address,
               providerName: sheep.providerName,
@@ -59,9 +61,9 @@ class SheepLocalDataSourceImpl implements SheepLocalDataSource {
               finderName: sheep.finderName,
               finderPhone: sheep.finderPhone,
               createdAt: sheep.createdAt,
-              status: sheep.status,
-              stage: sheep.stage,
-              surveyStatus: sheep.surveyStatus,
+              status: sheep.status.value,
+              stage: sheep.stage.value,
+              surveyStatus: sheep.surveyStatus.value,
               totalSessions: sheep.totalSessions,
               sessionsDone: sheep.sessionsDone,
               wateringSessionsDone: sheep.wateringSessionsDone,
@@ -77,13 +79,12 @@ class SheepLocalDataSourceImpl implements SheepLocalDataSource {
   @override
   Future<void> updateSheep(SheepModel sheep) async {
     try {
-      await (database.update(database.sheepTable)
-            ..where((tbl) => tbl.id.equals(sheep.id)))
+      await (db.update(db.sheepTable)..where((tbl) => tbl.id.equals(sheep.id)))
           .write(
         SheepTableCompanion(
           name: Value(sheep.name),
           phoneNumber: Value(sheep.phoneNumber),
-          whatsappNumber: Value(sheep.whatsappNumber),
+          isWhatsAppNumber: Value(sheep.isWhatsAppNumber),
           age: Value(sheep.age),
           address: Value(sheep.address),
           providerName: Value(sheep.providerName),
@@ -91,9 +92,9 @@ class SheepLocalDataSourceImpl implements SheepLocalDataSource {
           relationWithProvider: Value(sheep.relationWithProvider),
           finderName: Value(sheep.finderName),
           finderPhone: Value(sheep.finderPhone),
-          status: Value(sheep.status),
-          stage: Value(sheep.stage),
-          surveyStatus: Value(sheep.surveyStatus),
+          status: Value(sheep.status.value),
+          stage: Value(sheep.stage.value),
+          surveyStatus: Value(sheep.surveyStatus.value),
           totalSessions: Value(sheep.totalSessions),
           sessionsDone: Value(sheep.sessionsDone),
           wateringSessionsDone: Value(sheep.wateringSessionsDone),
@@ -107,11 +108,9 @@ class SheepLocalDataSourceImpl implements SheepLocalDataSource {
   }
 
   @override
-  Future<void> abandonSheep(String id, String reason, String details) async {
+  Future<void> abandonSheep(int id, String reason, String details) async {
     try {
-      await (database.update(database.sheepTable)
-            ..where((tbl) => tbl.id.equals(id)))
-          .write(
+      await (db.update(db.sheepTable)..where((tbl) => tbl.id.equals(id))).write(
         SheepTableCompanion(
           status: const Value('abandoned'),
           abandonReason: Value(reason),
@@ -124,12 +123,14 @@ class SheepLocalDataSourceImpl implements SheepLocalDataSource {
   }
 
   @override
-  Future<List<SessionModel>> getSheepSessions(String sheepId) async {
+  Future<List<SessionModel>> getSheepSessions(int sheepId) async {
     try {
-      final sessions = await (database.select(database.sessionTable)
+      final sessions = await (db.select(db.sessionTable)
             ..where((tbl) => tbl.sheepId.equals(sheepId)))
           .get();
-      return sessions.map((session) => _convertToSessionModel(session)).toList();
+      return sessions
+          .map((session) => _convertToSessionModel(session))
+          .toList();
     } catch (e) {
       throw DatabaseFailure(e.toString());
     }
@@ -138,9 +139,8 @@ class SheepLocalDataSourceImpl implements SheepLocalDataSource {
   @override
   Future<void> addSession(SessionModel session) async {
     try {
-      await database.into(database.sessionTable).insert(
+      await db.into(db.sessionTable).insert(
             SessionTableCompanion.insert(
-              id: session.id,
               sheepId: session.sheepId,
               appointmentDate: session.appointmentDate,
               type: session.type,
@@ -158,7 +158,7 @@ class SheepLocalDataSourceImpl implements SheepLocalDataSource {
   @override
   Future<void> updateSession(SessionModel session) async {
     try {
-      await (database.update(database.sessionTable)
+      await (db.update(db.sessionTable)
             ..where((tbl) => tbl.id.equals(session.id)))
           .write(
         SessionTableCompanion(
@@ -178,7 +178,7 @@ class SheepLocalDataSourceImpl implements SheepLocalDataSource {
       id: sheep.id,
       name: sheep.name,
       phoneNumber: sheep.phoneNumber,
-      whatsappNumber: sheep.whatsappNumber,
+      isWhatsAppNumber: sheep.isWhatsAppNumber,
       age: sheep.age,
       address: sheep.address,
       providerName: sheep.providerName,
@@ -187,9 +187,9 @@ class SheepLocalDataSourceImpl implements SheepLocalDataSource {
       finderName: sheep.finderName,
       finderPhone: sheep.finderPhone,
       createdAt: sheep.createdAt,
-      status: sheep.status,
-      stage: sheep.stage,
-      surveyStatus: sheep.surveyStatus,
+      status: ESheepStatus.tryParse(sheep.status)!,
+      stage: ESheepStage.tryParse(sheep.stage)!,
+      surveyStatus: ESheepSurveyStatus.tryParse(sheep.surveyStatus)!,
       totalSessions: sheep.totalSessions,
       sessionsDone: sheep.sessionsDone,
       wateringSessionsDone: sheep.wateringSessionsDone,

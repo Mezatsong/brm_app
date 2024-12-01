@@ -5,7 +5,7 @@ class SheepModel extends Sheep {
     required super.id,
     required super.name,
     required super.phoneNumber,
-    super.whatsappNumber,
+    required super.isWhatsAppNumber,
     required super.age,
     required super.address,
     required super.providerName,
@@ -24,12 +24,37 @@ class SheepModel extends Sheep {
     super.abandonDetails,
   });
 
+  factory SheepModel.fromSheep(Sheep sheep) {
+    return SheepModel(
+      id: sheep.id,
+      name: sheep.name,
+      phoneNumber: sheep.phoneNumber,
+      isWhatsAppNumber: sheep.isWhatsAppNumber,
+      age: sheep.age,
+      address: sheep.address,
+      providerName: sheep.providerName,
+      providerPhone: sheep.providerPhone,
+      relationWithProvider: sheep.relationWithProvider,
+      finderName: sheep.finderName,
+      finderPhone: sheep.finderPhone,
+      createdAt: sheep.createdAt,
+      status: sheep.status,
+      stage: sheep.stage,
+      surveyStatus: sheep.surveyStatus,
+      totalSessions: sheep.totalSessions,
+      sessionsDone: sheep.sessionsDone,
+      wateringSessionsDone: sheep.wateringSessionsDone,
+      abandonReason: sheep.abandonReason,
+      abandonDetails: sheep.abandonDetails,
+    );
+  }
+
   factory SheepModel.fromJson(Map<String, dynamic> json) {
     return SheepModel(
       id: json['id'],
       name: json['name'],
       phoneNumber: json['phoneNumber'],
-      whatsappNumber: json['whatsappNumber'],
+      isWhatsAppNumber: json['isWhatsAppNumber'],
       age: json['age'],
       address: json['address'],
       providerName: json['providerName'],
@@ -54,7 +79,7 @@ class SheepModel extends Sheep {
       'id': id,
       'name': name,
       'phoneNumber': phoneNumber,
-      'whatsappNumber': whatsappNumber,
+      'isWhatsAppNumber': isWhatsAppNumber,
       'age': age,
       'address': address,
       'providerName': providerName,

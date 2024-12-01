@@ -1,10 +1,10 @@
 import 'package:equatable/equatable.dart';
 
 class Sheep extends Equatable {
-  final String id;
+  final int id;
   final String name;
   final String phoneNumber;
-  final String? whatsappNumber;
+  final bool isWhatsAppNumber;
   final int age;
   final String address;
   final String providerName;
@@ -13,9 +13,9 @@ class Sheep extends Equatable {
   final String finderName;
   final String finderPhone;
   final DateTime createdAt;
-  final String status; // active, abandoned
-  final String stage; // survey, witnessing, transfer, watering, won
-  final String surveyStatus; // pending, ok, rejected
+  final ESheepStatus status; // active, abandoned
+  final ESheepStage stage; // survey, witnessing, transfer, watering, won
+  final ESheepSurveyStatus surveyStatus; // none, pending, ok, rejected
   final int totalSessions;
   final int sessionsDone;
   final int wateringSessionsDone;
@@ -26,7 +26,7 @@ class Sheep extends Equatable {
     required this.id,
     required this.name,
     required this.phoneNumber,
-    this.whatsappNumber,
+    required this.isWhatsAppNumber,
     required this.age,
     required this.address,
     required this.providerName,
@@ -47,25 +47,66 @@ class Sheep extends Equatable {
 
   @override
   List<Object?> get props => [
-    id,
-    name,
-    phoneNumber,
-    whatsappNumber,
-    age,
-    address,
-    providerName,
-    providerPhone,
-    relationWithProvider,
-    finderName,
-    finderPhone,
-    createdAt,
-    status,
-    stage,
-    surveyStatus,
-    totalSessions,
-    sessionsDone,
-    wateringSessionsDone,
-    abandonReason,
-    abandonDetails,
-  ];
+        id,
+        name,
+        phoneNumber,
+        isWhatsAppNumber,
+        age,
+        address,
+        providerName,
+        providerPhone,
+        relationWithProvider,
+        finderName,
+        finderPhone,
+        createdAt,
+        status,
+        stage,
+        surveyStatus,
+        totalSessions,
+        sessionsDone,
+        wateringSessionsDone,
+        abandonReason,
+        abandonDetails,
+      ];
+}
+
+enum ESheepStatus {
+  active('active'),
+  abandoned('abandonee');
+
+  final String value;
+  const ESheepStatus(this.value);
+
+  static ESheepStatus? tryParse(String value) {
+    return values.where((e) => e.value == value.toLowerCase()).firstOrNull;
+  }
+}
+
+enum ESheepStage {
+  survey('sondage'),
+  witnessing('temoingnage'),
+  transfer('transfert'),
+  watering('arrosage'),
+  won('gagne');
+
+  final String value;
+  const ESheepStage(this.value);
+
+  static ESheepStage? tryParse(String value) {
+    return values.where((e) => e.value == value.toLowerCase()).firstOrNull;
+  }
+}
+
+enum ESheepSurveyStatus {
+  none('aucun'),
+  pending('en_attente'),
+  ok('ok'),
+  rejected('rejete');
+
+  final String value;
+  const ESheepSurveyStatus(this.value);
+
+  static ESheepSurveyStatus? tryParse(String value) {
+    return values.where((e) => e.value == value.toLowerCase()).firstOrNull;
+  }
 }

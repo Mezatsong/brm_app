@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_modular/flutter_modular.dart';
 import '../../../../../core/constants/app_strings.dart';
-import '../../cubit/sheep_list_cubit.dart';
+import 'cubit/sheep_list_cubit.dart';
 import 'widgets/sheep_list_item.dart';
 import '../../widgets/search_bar.dart';
 
@@ -11,7 +12,7 @@ class SheepListPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
-      create: (context) => SheepListCubit(context.read())..loadSheep(),
+      create: (context) => SheepListCubit(Modular.get())..loadSheep(),
       child: Scaffold(
         appBar: AppBar(
           title: const Text(AppStrings.sheep),

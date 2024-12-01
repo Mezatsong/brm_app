@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_modular/flutter_modular.dart';
 import '../../../../domain/entities/sheep.dart';
+import '../../sheep_registration/sheep_create_or_update_page.dart';
 
 class SheepListItem extends StatelessWidget {
   final Sheep sheep;
@@ -19,9 +21,9 @@ class SheepListItem extends StatelessWidget {
             const SizedBox(height: 4),
             Row(
               children: [
-                _buildChip(sheep.stage),
+                _buildChip(sheep.stage.value),
                 const SizedBox(width: 8),
-                _buildChip(sheep.status),
+                _buildChip(sheep.status.value),
               ],
             ),
           ],
@@ -31,7 +33,10 @@ class SheepListItem extends StatelessWidget {
           backgroundColor: Colors.grey[200],
         ),
         onTap: () {
-          // TODO: Navigate to sheep details
+          Modular.to.pushNamed(
+            SheepCreateOrUpdatePage.pageRoute,
+            arguments: sheep,
+          );
         },
       ),
     );
@@ -39,10 +44,7 @@ class SheepListItem extends StatelessWidget {
 
   Widget _buildChip(String label) {
     return Chip(
-      label: Text(
-        label,
-        style: const TextStyle(fontSize: 12),
-      ),
+      label: Text(label, style: const TextStyle(fontSize: 12)),
       padding: const EdgeInsets.all(4),
     );
   }
