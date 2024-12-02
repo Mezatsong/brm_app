@@ -12,7 +12,10 @@ class AbandonSheepUseCase implements UseCase<void, AbandonSheepParams> {
   @override
   Future<Either<Failure, void>> call(AbandonSheepParams params) async {
     return await repository.abandonSheep(
-        params.id, params.reason, params.details);
+      id: params.id,
+      reason: params.reason,
+      details: params.details,
+    );
   }
 }
 

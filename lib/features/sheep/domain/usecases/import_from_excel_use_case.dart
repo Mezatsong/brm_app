@@ -1,3 +1,5 @@
+import 'dart:typed_data';
+
 import 'package:dartz/dartz.dart';
 import 'package:equatable/equatable.dart';
 import '../../../../core/error/failures.dart';
@@ -11,15 +13,15 @@ class ImportFromExcelUseCase implements UseCase<void, ImportParams> {
 
   @override
   Future<Either<Failure, void>> call(ImportParams params) async {
-    return await repository.importFromExcel(params.path);
+    return await repository.importFromExcel(params.bytes);
   }
 }
 
 class ImportParams extends Equatable {
-  final String path;
+  final Uint8List bytes;
 
-  const ImportParams({required this.path});
+  const ImportParams({required this.bytes});
 
   @override
-  List<Object> get props => [path];
+  List<Object> get props => [bytes];
 }

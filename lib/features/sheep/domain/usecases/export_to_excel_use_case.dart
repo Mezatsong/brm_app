@@ -11,15 +11,15 @@ class ExportToExcelUseCase implements UseCase<void, ExportParams> {
 
   @override
   Future<Either<Failure, void>> call(ExportParams params) async {
-    return await repository.exportToExcel(params.path);
+    return await repository.exportToExcel(params.filePath);
   }
 }
 
 class ExportParams extends Equatable {
-  final String path;
+  final String filePath;
 
-  const ExportParams({required this.path});
+  const ExportParams({required this.filePath});
 
   @override
-  List<Object> get props => [path];
+  List<Object> get props => [filePath];
 }

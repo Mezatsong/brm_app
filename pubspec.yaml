@@ -26,6 +26,7 @@ dependencies:
   dartz: ^0.10.1
   sqlite3: ^2.5.0
   flutter_screen_controller: ^0.0.5+1
+  url_launcher: ^6.3.1
 
 dev_dependencies:
   flutter_test:

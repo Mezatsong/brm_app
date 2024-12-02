@@ -1,9 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_modular/flutter_modular.dart';
 import '../appointments/appointments_page.dart';
 import '../settings/settings_page.dart';
 import '../sheep_list/sheep_list_page.dart';
-import '../sheep_registration/sheep_create_or_update_page.dart';
 
 enum HomePageArguments {
   dashboard(0),
@@ -83,13 +81,6 @@ class _HomePageState extends State<HomePage> {
           ),
         ],
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          Modular.to.pushNamed(SheepCreateOrUpdatePage.pageRoute);
-        },
-        child: const Icon(Icons.add),
-      ),
-      floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
     );
   }
 }

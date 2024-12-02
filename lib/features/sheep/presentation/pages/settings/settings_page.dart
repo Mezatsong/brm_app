@@ -1,3 +1,5 @@
+import 'package:brm/features/sheep/presentation/pages/settings/widgets/export_bottom_sheet.dart';
+import 'package:brm/features/sheep/presentation/pages/settings/widgets/import_bottom_sheet.dart';
 import 'package:flutter/material.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 
@@ -33,9 +35,11 @@ class _SettingsPageState extends State<SettingsPage> {
 
     // Load settings with default values
     setState(() {
-      _timeToRingBeforeAppointment = _settingsBox.get('timeToRing', defaultValue: 24);
+      _timeToRingBeforeAppointment =
+          _settingsBox.get('timeToRing', defaultValue: 24);
       _syncFrequency = _settingsBox.get('syncFrequency', defaultValue: 'daily');
-      _usePhoneUnlockScheme = _settingsBox.get('lockWithPhone', defaultValue: false);
+      _usePhoneUnlockScheme =
+          _settingsBox.get('lockWithPhone', defaultValue: false);
     });
   }
 
@@ -65,7 +69,8 @@ class _SettingsPageState extends State<SettingsPage> {
                     setState(() {
                       if (_timeToRingBeforeAppointment > 1) {
                         _timeToRingBeforeAppointment--;
-                        _saveSetting('timeToRing', _timeToRingBeforeAppointment);
+                        _saveSetting(
+                            'timeToRing', _timeToRingBeforeAppointment);
                       }
                     });
                   },
@@ -115,6 +120,26 @@ class _SettingsPageState extends State<SettingsPage> {
                 _saveSetting('lockWithPhone', _usePhoneUnlockScheme);
               });
             },
+          ),
+
+          // Import
+          ListTile(
+            title: const Text('Import data'),
+            subtitle: Text('Import sheeps and appointments from Excel'),
+            trailing: IconButton(
+              icon: const Icon(Icons.file_download_outlined),
+              onPressed: () => ImportBottomSheet.show(context),
+            ),
+          ),
+
+          // Export
+          ListTile(
+            title: const Text('Export data'),
+            subtitle: Text('Export sheeps and appointments to Excel'),
+            trailing: IconButton(
+              icon: const Icon(Icons.file_upload_outlined),
+              onPressed: () => ExportBottomSheet.show(context),
+            ),
           ),
         ],
       ),

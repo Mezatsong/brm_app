@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'dart:typed_data';
 import 'package:dartz/dartz.dart';
 import 'package:excel/excel.dart';
 import 'package:flutter/material.dart';
@@ -19,6 +20,31 @@ class SheepRepositoryImpl implements SheepRepository {
   Future<Either<Failure, List<Sheep>>> getAllSheep() async {
     try {
       final sheep = await localDataSource.getAllSheep();
+      return Right(sheep);
+    } catch (e, s) {
+      debugPrintStack(label: e.toString(), stackTrace: s);
+      return Left(DatabaseFailure(e.toString()));
+    }
+  }
+
+  @override
+  Future<Either<Failure, List<Sheep>>> searchSheepWithFilters({
+    required String query,
+    ESheepStatus? status,
+    ESheepStage? stage,
+    ESheepSurveyStatus? surveyStatus,
+    int? limit,
+    int? offset,
+  }) async {
+    try {
+      final sheep = await localDataSource.searchSheepWithFilters(
+        query,
+        status,
+        stage,
+        surveyStatus,
+        limit,
+        offset,
+      );
       return Right(sheep);
     } catch (e, s) {
       debugPrintStack(label: e.toString(), stackTrace: s);
@@ -60,11 +86,11 @@ class SheepRepositoryImpl implements SheepRepository {
   }
 
   @override
-  Future<Either<Failure, void>> abandonSheep(
-    int id,
-    String reason,
-    String details,
-  ) async {
+  Future<Either<Failure, void>> abandonSheep({
+    required int id,
+    required String reason,
+    required String details,
+  }) async {
     try {
       await localDataSource.abandonSheep(id, reason, details);
       return const Right(null);
@@ -179,9 +205,8 @@ class SheepRepositoryImpl implements SheepRepository {
   }
 
   @override
-  Future<Either<Failure, void>> importFromExcel(String path) async {
+  Future<Either<Failure, void>> importFromExcel(Uint8List bytes) async {
     try {
-      final bytes = File(path).readAsBytesSync();
       final excel = Excel.decodeBytes(bytes);
 
       final sheet = excel.tables['Sheep'];

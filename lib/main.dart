@@ -3,9 +3,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter_modular/flutter_modular.dart';
 import 'app_module.dart';
 import 'features/sheep/presentation/app_widget.dart';
+import 'package:intl/intl.dart';
+import 'package:intl/date_symbol_data_local.dart';
 
-void main() {
+Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  Intl.defaultLocale = 'fr_FR';
+  await initializeDateFormatting(Intl.defaultLocale);
 
   if (kDebugMode) {
     // imageCache.clear();

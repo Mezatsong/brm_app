@@ -7,6 +7,16 @@ import 'drift/database.dart';
 
 abstract class SheepLocalDataSource {
   Future<List<SheepModel>> getAllSheep();
+
+  Future<List<SheepModel>> searchSheepWithFilters(
+    String query,
+    ESheepStatus? status,
+    ESheepStage? stage,
+    ESheepSurveyStatus? surveyStatus,
+    int? limit,
+    int? offset,
+  );
+
   Future<SheepModel> getSheepById(int id);
   Future<void> addSheep(SheepModel sheep);
   Future<void> updateSheep(SheepModel sheep);
@@ -27,7 +37,54 @@ class SheepLocalDataSourceImpl implements SheepLocalDataSource {
       final sheepEntries = await (db.select(db.sheepTable)
             ..orderBy([(s) => OrderingTerm.desc(s.createdAt)]))
           .get();
-      return sheepEntries.map((sheep) => _convertToSheepModel(sheep)).toList();
+      return sheepEntries.map(_convertToSheepModel).toList();
+    } catch (e) {
+      throw DatabaseFailure(e.toString());
+    }
+  }
+
+  @override
+  Future<List<SheepModel>> searchSheepWithFilters(
+    String query,
+    ESheepStatus? status,
+    ESheepStage? stage,
+    ESheepSurveyStatus? surveyStatus,
+    int? limit,
+    int? offset,
+  ) async {
+    try {
+      final selectStmt = db.select(db.sheepTable);
+
+      if (query.isNotEmpty) {
+        // Filter by name (case-insensitive)
+        selectStmt.where((s) => s.name.lower().contains(query.toLowerCase()));
+      }
+
+      if (status != null) {
+        // Filter by status (optional)
+        selectStmt.where((s) => s.status.equals(status.value));
+      }
+
+      if (stage != null) {
+        // Filter by stage (optional)
+        selectStmt.where((s) => s.stage.equals(stage.value));
+      }
+
+      if (surveyStatus != null) {
+        // Filter by survey status (optional)
+        selectStmt.where((s) => s.surveyStatus.equals(surveyStatus.value));
+      }
+
+      if (limit != null) {
+        selectStmt.limit(limit, offset: offset);
+      }
+
+      // Maintain order by creation date descending
+      selectStmt.orderBy([(s) => OrderingTerm.desc(s.createdAt)]);
+
+      final sheepEntries = await selectStmt.get();
+
+      return sheepEntries.map(_convertToSheepModel).toList();
     } catch (e) {
       throw DatabaseFailure(e.toString());
     }

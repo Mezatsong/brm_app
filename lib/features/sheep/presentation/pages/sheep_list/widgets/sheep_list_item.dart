@@ -1,51 +1,55 @@
-import 'package:flutter/material.dart';
-import 'package:flutter_modular/flutter_modular.dart';
-import '../../../../domain/entities/sheep.dart';
-import '../../sheep_registration/sheep_create_or_update_page.dart';
+part of '../sheep_list_page.dart';
 
-class SheepListItem extends StatelessWidget {
+class _SheepListItem extends StatelessWidget {
   final Sheep sheep;
 
-  const SheepListItem({super.key, required this.sheep});
+  const _SheepListItem(this.sheep);
+
+  IconData _getStatusIcon(ESheepStatus status) {
+    switch (status) {
+      case ESheepStatus.active:
+        return Icons.check_circle;
+      case ESheepStatus.abandoned:
+        return Icons.cancel;
+    }
+  }
+
+  Color _getStatusColor(ESheepStatus status) {
+    switch (status) {
+      case ESheepStatus.active:
+        return Colors.green;
+      case ESheepStatus.abandoned:
+        return Colors.red;
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     return Card(
-      margin: const EdgeInsets.only(bottom: 16),
+      margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       child: ListTile(
-        title: Text(sheep.name),
+        title: Text(
+          sheep.name,
+          style: const TextStyle(fontWeight: FontWeight.bold),
+        ),
         subtitle: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(sheep.phoneNumber),
-            const SizedBox(height: 4),
-            Row(
-              children: [
-                _buildChip(sheep.stage.value),
-                const SizedBox(width: 8),
-                _buildChip(sheep.status.value),
-              ],
-            ),
+            Text('Étape: ${sheep.stage.value}'),
+            Text('Statut: ${sheep.status.value}'),
           ],
         ),
-        trailing: CircularProgressIndicator(
-          value: sheep.sessionsDone / sheep.totalSessions,
-          backgroundColor: Colors.grey[200],
+        trailing: Icon(
+          _getStatusIcon(sheep.status),
+          color: _getStatusColor(sheep.status),
         ),
         onTap: () {
           Modular.to.pushNamed(
-            SheepCreateOrUpdatePage.pageRoute,
+            SheepDetailPage.pageRoute(sheep.id),
             arguments: sheep,
           );
         },
       ),
-    );
-  }
-
-  Widget _buildChip(String label) {
-    return Chip(
-      label: Text(label, style: const TextStyle(fontSize: 12)),
-      padding: const EdgeInsets.all(4),
     );
   }
 }
