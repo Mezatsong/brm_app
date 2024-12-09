@@ -5,6 +5,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_modular/flutter_modular.dart';
 import 'package:flutter_screen_controller/flutter_screen_controller.dart';
 
+import '../../../domain/entities/enums/e_sheep_stage.dart';
+import '../../../domain/entities/enums/e_sheep_status.dart';
+import '../../../domain/entities/enums/e_sheep_survey_status.dart';
 import '../../../domain/entities/sheep.dart';
 import 'widgets/steps/activities_form.dart';
 import 'widgets/steps/personal_info_form.dart';
@@ -125,67 +128,6 @@ class SheepCreateOrUpdateController extends ScreenController {
     }
   }
 
-  Future<void> _submitForm() async {
-    // Create Sheep object
-    final sheep = Sheep(
-      id: DateTime.now().millisecondsSinceEpoch, // Temporary ID
-      name: nameController.text,
-      phoneNumber: phoneController.text,
-      isWhatsAppNumber: isWhatsAppNumber,
-      age: int.parse(ageController.text),
-      address: addressController.text,
-      providerName: providerNameController.text,
-      providerPhone: providerPhoneController.text,
-      relationWithProvider: relationWithProviderController.text,
-      finderName: finderNameController.text,
-      finderPhone: finderPhoneController.text,
-      createdAt: DateTime.now(),
-      status: status,
-      stage: stage,
-      surveyStatus: surveyStatus,
-      totalSessions: totalSessions,
-      sessionsDone: sessionsDone,
-      wateringSessionsDone: wateringSessionsDone,
-      abandonReason: status == ESheepStatus.abandoned ? abandonReason : null,
-      abandonDetails: status == ESheepStatus.abandoned ? abandonDetails : null,
-    );
-
-    updateUI(() => _isSubmitting = true);
-
-    final result = _oldSheep != null
-        ? await _updateSheepUseCase.call(UpdateSheepParams(sheep: sheep))
-        : await _addSheepUseCase.call(AddSheepParams(sheep: sheep));
-
-    result.fold((failure) {
-      updateUI(() => _isSubmitting = false);
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            failure.message, // "L'Opération a échoué"
-            style: TextStyle(color: Colors.white),
-          ),
-          backgroundColor: Colors.red,
-        ),
-      );
-    }, (_) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            'Brebis ${_oldSheep != null ? "mise à jour" : "enregistré"} avec succès !',
-          ),
-        ),
-      );
-      if (Modular.to.canPop()) {
-        Modular.to.pop();
-      } else {
-        Modular.to.pushNamed(
-          HomePage.pageRoute,
-          arguments: HomePageArguments.sheepList,
-        );
-      }
-    });
-  }
-
   List<Step> buildSteps() {
     return [
       // Personal Info Step
@@ -254,5 +196,66 @@ class SheepCreateOrUpdateController extends ScreenController {
     if (_currentStep > 0) {
       updateUI(() => _currentStep -= 1);
     }
+  }
+
+  Future<void> _submitForm() async {
+    // Create Sheep object
+    final sheep = Sheep(
+      id: DateTime.now().millisecondsSinceEpoch, // Temporary ID
+      name: nameController.text,
+      phoneNumber: phoneController.text,
+      isWhatsAppNumber: isWhatsAppNumber,
+      age: ageController.text,
+      address: addressController.text,
+      providerName: providerNameController.text,
+      providerPhone: providerPhoneController.text,
+      relationWithProvider: relationWithProviderController.text,
+      finderName: finderNameController.text,
+      finderPhone: finderPhoneController.text,
+      createdAt: DateTime.now(),
+      status: status,
+      stage: stage,
+      surveyStatus: surveyStatus,
+      totalSessions: totalSessions,
+      sessionsDone: sessionsDone,
+      wateringSessionsDone: wateringSessionsDone,
+      abandonReason: status == ESheepStatus.abandoned ? abandonReason : null,
+      abandonDetails: status == ESheepStatus.abandoned ? abandonDetails : null,
+    );
+
+    updateUI(() => _isSubmitting = true);
+
+    final result = _oldSheep != null
+        ? await _updateSheepUseCase.call(UpdateSheepParams(sheep: sheep))
+        : await _addSheepUseCase.call(AddSheepParams(sheep: sheep));
+
+    result.fold((failure) {
+      updateUI(() => _isSubmitting = false);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            failure.message, // "L'Opération a échoué"
+            style: TextStyle(color: Colors.white),
+          ),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }, (_) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            'Brebis ${_oldSheep != null ? "mise à jour" : "enregistré"} avec succès !',
+          ),
+        ),
+      );
+      if (Modular.to.canPop()) {
+        Modular.to.pop();
+      } else {
+        Modular.to.pushNamed(
+          HomePage.pageRoute,
+          arguments: HomePageArguments.sheepList,
+        );
+      }
+    });
   }
 }

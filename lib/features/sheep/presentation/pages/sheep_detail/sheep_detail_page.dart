@@ -1,10 +1,13 @@
 import 'package:brm/features/sheep/domain/usecases/get_sheep_by_id_use_case.dart';
+import 'package:brm/features/sheep/presentation/pages/appointment_add_or_edit/appointment_add_or_edit_page.dart';
 import 'package:brm/features/sheep/presentation/pages/sheep_create_or_update/sheep_create_or_update_page.dart';
 import 'package:brm/features/sheep/presentation/pages/sheep_detail/widgets/abandon_sheep_bottom_sheet_modal.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_modular/flutter_modular.dart';
 import 'package:intl/intl.dart';
 
+import '../../../../../core/constants/app_constants.dart';
+import '../../../domain/entities/enums/e_sheep_status.dart';
 import '../../../domain/entities/sheep.dart';
 import 'package:url_launcher/url_launcher_string.dart';
 
@@ -62,6 +65,17 @@ class SheepDetailPage extends StatelessWidget {
       appBar: AppBar(
         title: Text('Détails de la brebis #$sheepId'),
         actions: [
+          if (sheep != null)
+            IconButton(
+              icon: const Icon(Icons.add_alarm),
+              onPressed: () {
+                Modular.to.pushNamed(
+                  AppointmentAddOrEditPage.pageRoute,
+                  arguments: AppointmentAddOrEditPageArgs.create(sheep!),
+                );
+              },
+            ),
+
           IconButton(
             icon: const Icon(Icons.edit),
             onPressed: () {
@@ -184,8 +198,9 @@ class SheepDetailPage extends StatelessWidget {
                   ),
                   _buildProgressRow(
                     'Sessions d\'arrosage',
-                    '${sheep.wateringSessionsDone} / ${sheep.totalSessions}',
-                    sheep.wateringSessionsDone / sheep.totalSessions,
+                    '${sheep.wateringSessionsDone} / ${AppConstants.wateringtotalSessions}',
+                    sheep.wateringSessionsDone /
+                        AppConstants.wateringtotalSessions,
                   ),
                 ],
               ),
@@ -263,9 +278,11 @@ class SheepDetailPage extends StatelessWidget {
   Color _getStatusColor(Sheep sheep) {
     switch (sheep.status) {
       case ESheepStatus.active:
-        return Colors.green;
+        return Colors.blue;
       case ESheepStatus.abandoned:
         return Colors.red;
+      case ESheepStatus.won:
+        return Colors.green;
     }
   }
 
@@ -276,9 +293,7 @@ class SheepDetailPage extends StatelessWidget {
   }) {
     return Card(
       elevation: 4,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(10),
-      ),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
       child: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
@@ -318,12 +333,7 @@ class SheepDetailPage extends StatelessWidget {
               color: Colors.black87,
             ),
           ),
-          Text(
-            value,
-            style: const TextStyle(
-              color: Colors.black87,
-            ),
-          ),
+          Text(value, style: const TextStyle(color: Colors.black87)),
         ],
       ),
     );
@@ -335,32 +345,39 @@ class SheepDetailPage extends StatelessWidget {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(
-            label,
-            style: const TextStyle(
-              fontWeight: FontWeight.w600,
-              color: Colors.black87,
-            ),
-          ),
-          Row(
-            children: [
-              Text(
-                value,
+          Flexible(
+            flex: 2,
+            child: FittedBox(
+              child: Text(
+                label,
                 style: const TextStyle(
+                  fontWeight: FontWeight.w600,
                   color: Colors.black87,
                 ),
               ),
-              if (suffix != null) ...[
-                const SizedBox(width: 4),
-                Text(
-                  suffix,
-                  style: TextStyle(
-                    color: Colors.green.shade700,
-                    fontStyle: FontStyle.italic,
+            ),
+          ),
+          const SizedBox(width: 10),
+          Expanded(
+            flex: 3,
+            child: Column(
+              children: [
+                FittedBox(
+                  child: Text(
+                    value,
+                    style: const TextStyle(color: Colors.black87),
                   ),
                 ),
+                if (suffix != null)
+                  Text(
+                    suffix,
+                    style: TextStyle(
+                      color: Colors.green.shade700,
+                      fontStyle: FontStyle.italic,
+                    ),
+                  ),
               ],
-            ],
+            ),
           ),
         ],
       ),
@@ -385,9 +402,7 @@ class SheepDetailPage extends StatelessWidget {
               ),
               Text(
                 value,
-                style: const TextStyle(
-                  color: Colors.black87,
-                ),
+                style: const TextStyle(color: Colors.black87),
               ),
             ],
           ),

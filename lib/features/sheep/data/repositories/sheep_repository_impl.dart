@@ -4,6 +4,9 @@ import 'package:dartz/dartz.dart';
 import 'package:excel/excel.dart';
 import 'package:flutter/material.dart';
 import '../../../../core/error/failures.dart';
+import '../../domain/entities/enums/e_sheep_stage.dart';
+import '../../domain/entities/enums/e_sheep_status.dart';
+import '../../domain/entities/enums/e_sheep_survey_status.dart';
 import '../../domain/entities/sheep.dart';
 import '../../domain/entities/session.dart';
 import '../../domain/repositories/sheep_repository.dart';
@@ -19,8 +22,8 @@ class SheepRepositoryImpl implements SheepRepository {
   @override
   Future<Either<Failure, List<Sheep>>> getAllSheep() async {
     try {
-      final sheep = await localDataSource.getAllSheep();
-      return Right(sheep);
+      final sheepModels = await localDataSource.getAllSheep();
+      return Right(sheepModels.map((s) => s.toSheep()).toList());
     } catch (e, s) {
       debugPrintStack(label: e.toString(), stackTrace: s);
       return Left(DatabaseFailure(e.toString()));
@@ -37,7 +40,7 @@ class SheepRepositoryImpl implements SheepRepository {
     int? offset,
   }) async {
     try {
-      final sheep = await localDataSource.searchSheepWithFilters(
+      final sheepModels = await localDataSource.searchSheepWithFilters(
         query,
         status,
         stage,
@@ -45,7 +48,24 @@ class SheepRepositoryImpl implements SheepRepository {
         limit,
         offset,
       );
-      return Right(sheep);
+      return Right(sheepModels.map((s) => s.toSheep()).toList());
+    } catch (e, s) {
+      debugPrintStack(label: e.toString(), stackTrace: s);
+      return Left(DatabaseFailure(e.toString()));
+    }
+  }
+
+  @override
+  Future<Either<Failure, List<Session>>> getWeeklySessions({
+    DateTime? startDate,
+    DateTime? endDate,
+  }) async {
+    try {
+      final sessionModels = await localDataSource.getWeeklySessions(
+        startDate: startDate,
+        endDate: endDate,
+      );
+      return Right(sessionModels.map((s) => s.toSession()).toList());
     } catch (e, s) {
       debugPrintStack(label: e.toString(), stackTrace: s);
       return Left(DatabaseFailure(e.toString()));
@@ -55,8 +75,8 @@ class SheepRepositoryImpl implements SheepRepository {
   @override
   Future<Either<Failure, Sheep>> getSheepById(int id) async {
     try {
-      final sheep = await localDataSource.getSheepById(id);
-      return Right(sheep);
+      final sheepModel = await localDataSource.getSheepById(id);
+      return Right(sheepModel.toSheep());
     } catch (e, s) {
       debugPrintStack(label: e.toString(), stackTrace: s);
       return Left(DatabaseFailure(e.toString()));
@@ -104,7 +124,7 @@ class SheepRepositoryImpl implements SheepRepository {
   Future<Either<Failure, List<Session>>> getSheepSessions(int sheepId) async {
     try {
       final sessions = await localDataSource.getSheepSessions(sheepId);
-      return Right(sessions);
+      return Right(sessions.map((s) => s.toSession()).toList());
     } catch (e, s) {
       debugPrintStack(label: e.toString(), stackTrace: s);
       return Left(DatabaseFailure(e.toString()));
@@ -175,7 +195,7 @@ class SheepRepositoryImpl implements SheepRepository {
           TextCellValue(s.name),
           TextCellValue(s.phoneNumber),
           BoolCellValue(s.isWhatsAppNumber),
-          IntCellValue(s.age),
+          TextCellValue(s.age),
           TextCellValue(s.address),
           TextCellValue(s.providerName),
           TextCellValue(s.providerPhone),
@@ -225,7 +245,7 @@ class SheepRepositoryImpl implements SheepRepository {
           phoneNumber: row[2]?.value.toString() ?? '',
           isWhatsAppNumber:
               bool.tryParse(row[3]?.value.toString() ?? '') ?? true,
-          age: int.tryParse(row[4]?.value.toString() ?? '') ?? 0,
+          age: row[4]?.value.toString() ?? '',
           address: row[5]?.value.toString() ?? '',
           providerName: row[6]?.value.toString() ?? '',
           providerPhone: row[7]?.value.toString() ?? '',

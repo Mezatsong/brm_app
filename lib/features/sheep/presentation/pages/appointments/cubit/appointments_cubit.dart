@@ -1,54 +1,29 @@
-import 'package:brm/core/usecases/usecase.dart';
-import 'package:brm/features/sheep/domain/usecases/get_sheep_sessions_use_case.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:equatable/equatable.dart';
 import '../../../../domain/entities/session.dart';
-import '../../../../domain/usecases/get_all_sheep_use_case.dart';
+import '../../../../domain/usecases/get_weekly_sessions_use_case.dart';
 
-part 'appointments_state.dart';
+class AppointmentsCubit extends Cubit<AsyncSnapshot<List<Session>>> {
+  final GetWeeklySessionsUseCase _getWeeklySessionsUseCase;
 
-class AppointmentsCubit extends Cubit<AppointmentsState> {
-  final GetAllSheepUseCase _getAllSheepUseCase;
-  final GetSheepSessionsUseCase _getSheepSessionsUseCase;
+  AppointmentsCubit(this._getWeeklySessionsUseCase)
+      : super(const AsyncSnapshot.nothing());
 
-  AppointmentsCubit(this._getAllSheepUseCase, this._getSheepSessionsUseCase)
-      : super(const AppointmentsState());
+  Future<void> loadAppointments({
+    DateTime? startDate,
+    DateTime? endDate,
+  }) async {
+    emit(AsyncSnapshot.waiting());
 
-  Future<void> loadAppointments() async {
-    emit(state.copyWith(status: AppointmentsStatus.loading));
+    final result = await _getWeeklySessionsUseCase.call(
+      GetWeeklySessionsParams(startDate: startDate, endDate: endDate),
+    );
 
-    final result = await _getAllSheepUseCase.call(NoParams());
-
-    await result.fold(
-      (failure) async => emit(state.copyWith(
-        status: AppointmentsStatus.error,
-        error: failure.message,
-      )),
-      (sheep) async {
-        final allSessions = <Session>[];
-
-        for (final s in sheep) {
-          final sessionsResult = await _getSheepSessionsUseCase.call(
-            SheepIdParams(id: s.id),
-          );
-          sessionsResult.fold(
-            (failure) => null,
-            (sessions) => allSessions.addAll(
-              sessions.where((session) =>
-                  !session.completed &&
-                  session.appointmentDate.isAfter(DateTime.now())),
-            ),
-          );
-        }
-
-        allSessions
-            .sort((a, b) => a.appointmentDate.compareTo(b.appointmentDate));
-
-        emit(state.copyWith(
-          status: AppointmentsStatus.success,
-          appointments: allSessions,
-        ));
-      },
+    emit(
+      result.fold(
+        (fail) => AsyncSnapshot.withError(ConnectionState.done, fail.message),
+        (sessions) => AsyncSnapshot.withData(ConnectionState.done, sessions),
+      ),
     );
   }
 }

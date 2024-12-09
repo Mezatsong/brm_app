@@ -5,21 +5,14 @@ class _SheepListItem extends StatelessWidget {
 
   const _SheepListItem(this.sheep);
 
-  IconData _getStatusIcon(ESheepStatus status) {
+  Icon _getStatusIcon(ESheepStatus status) {
     switch (status) {
       case ESheepStatus.active:
-        return Icons.check_circle;
+        return Icon(Icons.pending, color: Colors.blue);
       case ESheepStatus.abandoned:
-        return Icons.cancel;
-    }
-  }
-
-  Color _getStatusColor(ESheepStatus status) {
-    switch (status) {
-      case ESheepStatus.active:
-        return Colors.green;
-      case ESheepStatus.abandoned:
-        return Colors.red;
+        return Icon(Icons.cancel, color: Colors.red);
+      case ESheepStatus.won:
+        return Icon(Icons.check_circle, color: Colors.green);
     }
   }
 
@@ -28,21 +21,22 @@ class _SheepListItem extends StatelessWidget {
     return Card(
       margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       child: ListTile(
-        title: Text(
-          sheep.name,
-          style: const TextStyle(fontWeight: FontWeight.bold),
+        title: FittedBox(
+          child: Text(
+            '${sheep.name}, ${sheep.age}',
+            style: const TextStyle(fontWeight: FontWeight.bold),
+          ),
         ),
         subtitle: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('Étape: ${sheep.stage.value}'),
-            Text('Statut: ${sheep.status.value}'),
+            Text('Étape: ${sheep.stateSummary}'),
+            Text(
+              'Prochain RDV: ${sheep.lastSession?.appointmentDate ?? "Aucun"}',
+            ),
           ],
         ),
-        trailing: Icon(
-          _getStatusIcon(sheep.status),
-          color: _getStatusColor(sheep.status),
-        ),
+        trailing: _getStatusIcon(sheep.status),
         onTap: () {
           Modular.to.pushNamed(
             SheepDetailPage.pageRoute(sheep.id),

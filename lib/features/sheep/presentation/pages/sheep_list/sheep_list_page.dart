@@ -3,6 +3,9 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_modular/flutter_modular.dart';
 import 'package:flutter_screen_controller/flutter_screen_controller.dart';
 
+import '../../../domain/entities/enums/e_sheep_stage.dart';
+import '../../../domain/entities/enums/e_sheep_status.dart';
+import '../../../domain/entities/enums/e_sheep_survey_status.dart';
 import '../../../domain/entities/sheep.dart';
 import '../../../domain/usecases/search_sheep_with_filters_use_case.dart';
 import '../sheep_create_or_update/sheep_create_or_update_page.dart';

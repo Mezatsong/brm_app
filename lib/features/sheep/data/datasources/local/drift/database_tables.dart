@@ -5,7 +5,7 @@ class SheepTable extends Table {
   TextColumn get name => text()();
   TextColumn get phoneNumber => text()();
   BoolColumn get isWhatsAppNumber => boolean()();
-  IntColumn get age => integer()();
+  TextColumn get age => text()();
   TextColumn get address => text()();
   TextColumn get providerName => text()();
   TextColumn get providerPhone => text()();

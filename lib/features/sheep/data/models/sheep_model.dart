@@ -1,6 +1,9 @@
 import '../../domain/entities/sheep.dart';
+import 'session_model.dart';
 
 class SheepModel extends Sheep {
+  final SessionModel? lastSessionModel;
+
   const SheepModel({
     required super.id,
     required super.name,
@@ -22,6 +25,7 @@ class SheepModel extends Sheep {
     required super.wateringSessionsDone,
     super.abandonReason,
     super.abandonDetails,
+    this.lastSessionModel,
   });
 
   factory SheepModel.fromSheep(Sheep sheep) {
@@ -46,6 +50,35 @@ class SheepModel extends Sheep {
       wateringSessionsDone: sheep.wateringSessionsDone,
       abandonReason: sheep.abandonReason,
       abandonDetails: sheep.abandonDetails,
+      lastSessionModel: sheep.lastSession == null
+          ? null
+          : SessionModel.fromSession(sheep.lastSession!),
+    );
+  }
+
+  Sheep toSheep() {
+    return Sheep(
+      id: id,
+      name: name,
+      phoneNumber: phoneNumber,
+      isWhatsAppNumber: isWhatsAppNumber,
+      age: age,
+      address: address,
+      providerName: providerName,
+      providerPhone: providerPhone,
+      relationWithProvider: relationWithProvider,
+      finderName: finderName,
+      finderPhone: finderPhone,
+      createdAt: createdAt,
+      status: status,
+      stage: stage,
+      surveyStatus: surveyStatus,
+      totalSessions: totalSessions,
+      sessionsDone: sessionsDone,
+      wateringSessionsDone: wateringSessionsDone,
+      abandonReason: abandonReason,
+      abandonDetails: abandonDetails,
+      lastSession: lastSessionModel?.toSession(),
     );
   }
 
@@ -71,6 +104,9 @@ class SheepModel extends Sheep {
       wateringSessionsDone: json['wateringSessionsDone'],
       abandonReason: json['abandonReason'],
       abandonDetails: json['abandonDetails'],
+      lastSessionModel: json['lastSession'] == null
+          ? null
+          : SessionModel.fromJson(json['lastSession']),
     );
   }
 
@@ -96,6 +132,7 @@ class SheepModel extends Sheep {
       'wateringSessionsDone': wateringSessionsDone,
       'abandonReason': abandonReason,
       'abandonDetails': abandonDetails,
+      'lastSession': lastSessionModel?.toJson(),
     };
   }
 }

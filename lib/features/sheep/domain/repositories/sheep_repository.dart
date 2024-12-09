@@ -2,6 +2,9 @@ import 'dart:typed_data';
 
 import 'package:dartz/dartz.dart';
 import '../../../../core/error/failures.dart';
+import '../entities/enums/e_sheep_stage.dart';
+import '../entities/enums/e_sheep_status.dart';
+import '../entities/enums/e_sheep_survey_status.dart';
 import '../entities/sheep.dart';
 import '../entities/session.dart';
 
@@ -15,6 +18,11 @@ abstract class SheepRepository {
     ESheepSurveyStatus? surveyStatus,
     int? limit,
     int? offset,
+  });
+
+  Future<Either<Failure, List<Session>>> getWeeklySessions({
+    DateTime? startDate,
+    DateTime? endDate,
   });
 
   Future<Either<Failure, Sheep>> getSheepById(int id);

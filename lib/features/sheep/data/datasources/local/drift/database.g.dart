@@ -40,9 +40,9 @@ class $SheepTableTable extends SheepTable
           'CHECK ("is_whats_app_number" IN (0, 1))'));
   static const VerificationMeta _ageMeta = const VerificationMeta('age');
   @override
-  late final GeneratedColumn<int> age = GeneratedColumn<int>(
+  late final GeneratedColumn<String> age = GeneratedColumn<String>(
       'age', aliasedName, false,
-      type: DriftSqlType.int, requiredDuringInsert: true);
+      type: DriftSqlType.string, requiredDuringInsert: true);
   static const VerificationMeta _addressMeta =
       const VerificationMeta('address');
   @override
@@ -325,7 +325,7 @@ class $SheepTableTable extends SheepTable
       isWhatsAppNumber: attachedDatabase.typeMapping.read(
           DriftSqlType.bool, data['${effectivePrefix}is_whats_app_number'])!,
       age: attachedDatabase.typeMapping
-          .read(DriftSqlType.int, data['${effectivePrefix}age'])!,
+          .read(DriftSqlType.string, data['${effectivePrefix}age'])!,
       address: attachedDatabase.typeMapping
           .read(DriftSqlType.string, data['${effectivePrefix}address'])!,
       providerName: attachedDatabase.typeMapping
@@ -371,7 +371,7 @@ class SheepTableData extends DataClass implements Insertable<SheepTableData> {
   final String name;
   final String phoneNumber;
   final bool isWhatsAppNumber;
-  final int age;
+  final String age;
   final String address;
   final String providerName;
   final String providerPhone;
@@ -415,7 +415,7 @@ class SheepTableData extends DataClass implements Insertable<SheepTableData> {
     map['name'] = Variable<String>(name);
     map['phone_number'] = Variable<String>(phoneNumber);
     map['is_whats_app_number'] = Variable<bool>(isWhatsAppNumber);
-    map['age'] = Variable<int>(age);
+    map['age'] = Variable<String>(age);
     map['address'] = Variable<String>(address);
     map['provider_name'] = Variable<String>(providerName);
     map['provider_phone'] = Variable<String>(providerPhone);
@@ -475,7 +475,7 @@ class SheepTableData extends DataClass implements Insertable<SheepTableData> {
       name: serializer.fromJson<String>(json['name']),
       phoneNumber: serializer.fromJson<String>(json['phoneNumber']),
       isWhatsAppNumber: serializer.fromJson<bool>(json['isWhatsAppNumber']),
-      age: serializer.fromJson<int>(json['age']),
+      age: serializer.fromJson<String>(json['age']),
       address: serializer.fromJson<String>(json['address']),
       providerName: serializer.fromJson<String>(json['providerName']),
       providerPhone: serializer.fromJson<String>(json['providerPhone']),
@@ -503,7 +503,7 @@ class SheepTableData extends DataClass implements Insertable<SheepTableData> {
       'name': serializer.toJson<String>(name),
       'phoneNumber': serializer.toJson<String>(phoneNumber),
       'isWhatsAppNumber': serializer.toJson<bool>(isWhatsAppNumber),
-      'age': serializer.toJson<int>(age),
+      'age': serializer.toJson<String>(age),
       'address': serializer.toJson<String>(address),
       'providerName': serializer.toJson<String>(providerName),
       'providerPhone': serializer.toJson<String>(providerPhone),
@@ -527,7 +527,7 @@ class SheepTableData extends DataClass implements Insertable<SheepTableData> {
           String? name,
           String? phoneNumber,
           bool? isWhatsAppNumber,
-          int? age,
+          String? age,
           String? address,
           String? providerName,
           String? providerPhone,
@@ -695,7 +695,7 @@ class SheepTableCompanion extends UpdateCompanion<SheepTableData> {
   final Value<String> name;
   final Value<String> phoneNumber;
   final Value<bool> isWhatsAppNumber;
-  final Value<int> age;
+  final Value<String> age;
   final Value<String> address;
   final Value<String> providerName;
   final Value<String> providerPhone;
@@ -738,7 +738,7 @@ class SheepTableCompanion extends UpdateCompanion<SheepTableData> {
     required String name,
     required String phoneNumber,
     required bool isWhatsAppNumber,
-    required int age,
+    required String age,
     required String address,
     required String providerName,
     required String providerPhone,
@@ -824,7 +824,7 @@ class SheepTableCompanion extends UpdateCompanion<SheepTableData> {
       Value<String>? name,
       Value<String>? phoneNumber,
       Value<bool>? isWhatsAppNumber,
-      Value<int>? age,
+      Value<String>? age,
       Value<String>? address,
       Value<String>? providerName,
       Value<String>? providerPhone,
@@ -880,7 +880,7 @@ class SheepTableCompanion extends UpdateCompanion<SheepTableData> {
       map['is_whats_app_number'] = Variable<bool>(isWhatsAppNumber.value);
     }
     if (age.present) {
-      map['age'] = Variable<int>(age.value);
+      map['age'] = Variable<String>(age.value);
     }
     if (address.present) {
       map['address'] = Variable<String>(address.value);
@@ -1410,7 +1410,7 @@ typedef $$SheepTableTableCreateCompanionBuilder = SheepTableCompanion Function({
   required String name,
   required String phoneNumber,
   required bool isWhatsAppNumber,
-  required int age,
+  required String age,
   required String address,
   required String providerName,
   required String providerPhone,
@@ -1432,7 +1432,7 @@ typedef $$SheepTableTableUpdateCompanionBuilder = SheepTableCompanion Function({
   Value<String> name,
   Value<String> phoneNumber,
   Value<bool> isWhatsAppNumber,
-  Value<int> age,
+  Value<String> age,
   Value<String> address,
   Value<String> providerName,
   Value<String> providerPhone,
@@ -1472,7 +1472,7 @@ class $$SheepTableTableFilterComposer
       column: $table.isWhatsAppNumber,
       builder: (column) => ColumnFilters(column));
 
-  ColumnFilters<int> get age => $composableBuilder(
+  ColumnFilters<String> get age => $composableBuilder(
       column: $table.age, builder: (column) => ColumnFilters(column));
 
   ColumnFilters<String> get address => $composableBuilder(
@@ -1546,7 +1546,7 @@ class $$SheepTableTableOrderingComposer
       column: $table.isWhatsAppNumber,
       builder: (column) => ColumnOrderings(column));
 
-  ColumnOrderings<int> get age => $composableBuilder(
+  ColumnOrderings<String> get age => $composableBuilder(
       column: $table.age, builder: (column) => ColumnOrderings(column));
 
   ColumnOrderings<String> get address => $composableBuilder(
@@ -1625,7 +1625,7 @@ class $$SheepTableTableAnnotationComposer
   GeneratedColumn<bool> get isWhatsAppNumber => $composableBuilder(
       column: $table.isWhatsAppNumber, builder: (column) => column);
 
-  GeneratedColumn<int> get age =>
+  GeneratedColumn<String> get age =>
       $composableBuilder(column: $table.age, builder: (column) => column);
 
   GeneratedColumn<String> get address =>
@@ -1704,7 +1704,7 @@ class $$SheepTableTableTableManager extends RootTableManager<
             Value<String> name = const Value.absent(),
             Value<String> phoneNumber = const Value.absent(),
             Value<bool> isWhatsAppNumber = const Value.absent(),
-            Value<int> age = const Value.absent(),
+            Value<String> age = const Value.absent(),
             Value<String> address = const Value.absent(),
             Value<String> providerName = const Value.absent(),
             Value<String> providerPhone = const Value.absent(),
@@ -1748,7 +1748,7 @@ class $$SheepTableTableTableManager extends RootTableManager<
             required String name,
             required String phoneNumber,
             required bool isWhatsAppNumber,
-            required int age,
+            required String age,
             required String address,
             required String providerName,
             required String providerPhone,

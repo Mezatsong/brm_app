@@ -1,6 +1,9 @@
 import '../../domain/entities/session.dart';
+import 'sheep_model.dart';
 
 class SessionModel extends Session {
+  final SheepModel? sheepModel;
+
   const SessionModel({
     required super.id,
     required super.sheepId,
@@ -10,7 +13,37 @@ class SessionModel extends Session {
     super.notes,
     required super.completed,
     super.completedAt,
+    this.sheepModel,
   });
+
+  factory SessionModel.fromSession(Session session) {
+    return SessionModel(
+      id: session.id,
+      sheepId: session.sheepId,
+      appointmentDate: session.appointmentDate,
+      type: session.type,
+      sessionNumber: session.sessionNumber,
+      notes: session.notes,
+      completed: session.completed,
+      completedAt: session.completedAt,
+      sheepModel:
+          session.sheep == null ? null : SheepModel.fromSheep(session.sheep!),
+    );
+  }
+
+  Session toSession() {
+    return Session(
+      id: id,
+      sheepId: sheepId,
+      appointmentDate: appointmentDate,
+      type: type,
+      sessionNumber: sessionNumber,
+      notes: notes,
+      completed: completed,
+      completedAt: completedAt,
+      sheep: sheepModel?.toSheep(),
+    );
+  }
 
   factory SessionModel.fromJson(Map<String, dynamic> json) {
     return SessionModel(
@@ -24,6 +57,8 @@ class SessionModel extends Session {
       completedAt: json['completedAt'] != null
           ? DateTime.parse(json['completedAt'])
           : null,
+      sheepModel:
+          json['sheep'] != null ? SheepModel.fromJson(json['sheep']) : null,
     );
   }
 
@@ -37,6 +72,7 @@ class SessionModel extends Session {
       'notes': notes,
       'completed': completed,
       'completedAt': completedAt?.toIso8601String(),
+      'sheep': sheepModel?.toJson(),
     };
   }
 }

@@ -11,10 +11,12 @@ import 'features/sheep/domain/usecases/export_to_excel_use_case.dart';
 import 'features/sheep/domain/usecases/get_all_sheep_use_case.dart';
 import 'features/sheep/domain/usecases/get_sheep_by_id_use_case.dart';
 import 'features/sheep/domain/usecases/get_sheep_sessions_use_case.dart';
+import 'features/sheep/domain/usecases/get_weekly_sessions_use_case.dart';
 import 'features/sheep/domain/usecases/import_from_excel_use_case.dart';
 import 'features/sheep/domain/usecases/search_sheep_with_filters_use_case.dart';
 import 'features/sheep/domain/usecases/update_session_use_case.dart';
 import 'features/sheep/domain/usecases/update_sheep_use_case.dart';
+import 'features/sheep/presentation/pages/appointment_add_or_edit/appointment_add_or_edit_page.dart';
 import 'features/sheep/presentation/pages/home/home_page.dart';
 import 'features/sheep/presentation/pages/sheep_create_or_update/sheep_create_or_update_page.dart';
 import 'features/sheep/presentation/pages/sheep_detail/sheep_detail_page.dart';
@@ -30,6 +32,7 @@ class AppModule extends Module {
     i.addLazySingleton(GetAllSheepUseCase.new);
     i.addLazySingleton(SearchSheepWithFiltersUseCase.new);
     i.addLazySingleton(GetSheepByIdUseCase.new);
+    i.addLazySingleton(GetWeeklySessionsUseCase.new);
     i.addLazySingleton(AddSheepUseCase.new);
     i.addLazySingleton(UpdateSheepUseCase.new);
     i.addLazySingleton(AbandonSheepUseCase.new);
@@ -60,6 +63,10 @@ class AppModule extends Module {
         sheepId: int.tryParse(r.args.params['id'] ?? ''),
         sheep: r.args.data,
       ),
+    );
+    r.child(
+      AppointmentAddOrEditPage.pageRoute,
+      child: (_) => AppointmentAddOrEditPage(r.args.data),
     );
   }
 }

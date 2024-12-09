@@ -1,14 +1,18 @@
+import 'package:brm/features/sheep/domain/entities/enums/e_sheep_stage.dart';
 import 'package:equatable/equatable.dart';
+
+import 'sheep.dart';
 
 class Session extends Equatable {
   final int id;
   final int sheepId;
   final DateTime appointmentDate;
-  final String type; // witnessing, watering
+  final ESheepStage type; // witnessing, watering, etc.
   final int sessionNumber;
   final String? notes;
   final bool completed;
   final DateTime? completedAt;
+  final Sheep? sheep; // Optional reference to associated sheep
 
   const Session({
     required this.id,
@@ -16,9 +20,10 @@ class Session extends Equatable {
     required this.appointmentDate,
     required this.type,
     required this.sessionNumber,
-    this.notes,
     required this.completed,
+    this.notes,
     this.completedAt,
+    this.sheep,
   });
 
   @override
@@ -31,5 +36,6 @@ class Session extends Equatable {
         notes,
         completed,
         completedAt,
+        sheep
       ];
 }

@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 
-import '../../../../../domain/entities/sheep.dart';
+import '../../../../../domain/entities/enums/e_sheep_stage.dart';
+import '../../../../../domain/entities/enums/e_sheep_status.dart';
+import '../../../../../domain/entities/enums/e_sheep_survey_status.dart';
 import '../../sheep_create_or_update_controller.dart';
 
 class ActivitiesForm extends StatefulWidget {

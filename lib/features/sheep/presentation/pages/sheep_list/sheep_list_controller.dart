@@ -7,7 +7,7 @@ class _SheepListController extends ScreenController {
   final ScrollController scrollController = ScrollController();
 
   // Filter states
-  ESheepStatus? selectedStatus;
+  ESheepStatus? selectedStatus = ESheepStatus.active;
   ESheepStage? selectedStage;
   ESheepSurveyStatus? selectedSurveyStatus;
 

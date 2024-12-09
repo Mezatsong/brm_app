@@ -2,6 +2,9 @@ import 'package:dartz/dartz.dart';
 import 'package:equatable/equatable.dart';
 import '../../../../core/error/failures.dart';
 import '../../../../core/usecases/usecase.dart';
+import '../entities/enums/e_sheep_stage.dart';
+import '../entities/enums/e_sheep_status.dart';
+import '../entities/enums/e_sheep_survey_status.dart';
 import '../entities/sheep.dart';
 import '../repositories/sheep_repository.dart';
 
