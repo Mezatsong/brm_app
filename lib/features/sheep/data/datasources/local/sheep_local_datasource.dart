@@ -110,8 +110,6 @@ class SheepLocalDataSourceImpl implements SheepLocalDataSource {
 
       selectStmt.groupBy([db.sheepTable.id]);
 
-      selectStmt.limit(1);
-
       // Transform results into Sheep objects with optional last session
       final results = await selectStmt.get();
 

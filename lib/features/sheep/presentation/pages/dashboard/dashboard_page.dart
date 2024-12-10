@@ -5,16 +5,12 @@ import 'package:flutter_modular/flutter_modular.dart';
 import 'package:syncfusion_flutter_charts/charts.dart';
 
 import '../../../domain/entities/sheep.dart';
+import '../sheep_detail/sheep_detail_page.dart';
 import 'bloc/sheep_dashboard_cubit.dart';
 
-class DashboardPage extends StatefulWidget {
+class DashboardPage extends StatelessWidget {
   const DashboardPage({super.key});
 
-  @override
-  State<DashboardPage> createState() => _DashboardPageState();
-}
-
-class _DashboardPageState extends State<DashboardPage> {
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
@@ -23,7 +19,7 @@ class _DashboardPageState extends State<DashboardPage> {
           ..loadDashboardData();
       },
       child: Scaffold(
-        appBar: AppBar(title: Text('Sheep Dashboard')),
+        appBar: AppBar(title: Text('Tableau de board')),
         body: BlocBuilder<SheepDashboardCubit, SheepDashboardState>(
           builder: (context, state) {
             if (state.isLoading) {
@@ -40,21 +36,24 @@ class _DashboardPageState extends State<DashboardPage> {
 
             // Your existing dashboard build logic,
             // but now using state.dashboardData and state.recentSheep
-            return _buildDashboardContent(state);
+            return _buildDashboardContent(context, state);
           },
         ),
       ),
     );
   }
 
-  Widget _buildDashboardContent(SheepDashboardState state) {
+  Widget _buildDashboardContent(
+    BuildContext context,
+    SheepDashboardState state,
+  ) {
     final dashboardData = state.dashboardData;
     final recentSheep = state.recentSheep ?? [];
 
     if (dashboardData == null) return SizedBox.shrink();
 
     return SingleChildScrollView(
-      padding: const EdgeInsets.all(16.0),
+      padding: const EdgeInsets.all(8.0),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -62,23 +61,30 @@ class _DashboardPageState extends State<DashboardPage> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: [
-              _buildStatCard(
-                icon: Icons.people,
-                title: 'Total Sheep',
-                value: dashboardData.totalSheep.toString(),
+              Flexible(
+                child: _buildStatCard(
+                  icon: Icons.people,
+                  title: 'Total Brebis',
+                  value: dashboardData.totalSheep.toString(),
+                ),
               ),
-              _buildStatCard(
-                icon: Icons.calendar_today,
-                title: 'Total Sessions',
-                value:
-                    '${dashboardData.completedSessions} / ${dashboardData.totalSessions}',
+              Flexible(
+                child: _buildStatCard(
+                  icon: Icons.calendar_today,
+                  title: 'Total Sessions',
+                  value: dashboardData.totalSessions > 0
+                      ? '${dashboardData.completedSessions} / ${dashboardData.totalSessions}'
+                      : '0%',
+                ),
               ),
-              _buildStatCard(
-                icon: Icons.check_circle,
-                title: 'Completion Rate',
-                value: dashboardData.totalSessions > 0
-                    ? '${(dashboardData.completedSessions / dashboardData.totalSessions * 100).toStringAsFixed(0)}%'
-                    : '0%',
+              Flexible(
+                child: _buildStatCard(
+                  icon: Icons.check_circle,
+                  title: 'Taux de complétion',
+                  value: dashboardData.totalSessions > 0
+                      ? '${(dashboardData.completedSessions / dashboardData.totalSessions * 100).toStringAsFixed(0)}%'
+                      : '0%',
+                ),
               ),
             ],
           ),
@@ -92,9 +98,9 @@ class _DashboardPageState extends State<DashboardPage> {
               children: [
                 TabBar(
                   tabs: [
-                    Tab(text: 'Stages'),
-                    Tab(text: 'Status'),
-                    Tab(text: 'Growth'),
+                    Tab(text: 'Stage'),
+                    Tab(text: 'Statut'),
+                    Tab(text: 'Croissance'),
                   ],
                 ),
                 SizedBox(height: 10),
@@ -143,9 +149,11 @@ class _DashboardPageState extends State<DashboardPage> {
           children: [
             Icon(icon, size: 30, color: Colors.blue),
             SizedBox(height: 8),
-            Text(
-              title,
-              style: TextStyle(fontSize: 12, color: Colors.grey),
+            FittedBox(
+              child: Text(
+                title,
+                style: TextStyle(fontSize: 12, color: Colors.grey),
+              ),
             ),
             SizedBox(height: 4),
             Text(
@@ -160,8 +168,10 @@ class _DashboardPageState extends State<DashboardPage> {
 
   Widget _buildPieChart(Map<String, int> data) {
     return SfCircularChart(
-      legend:
-          Legend(isVisible: true, overflowMode: LegendItemOverflowMode.wrap),
+      legend: Legend(
+        isVisible: true,
+        overflowMode: LegendItemOverflowMode.wrap,
+      ),
       series: <CircularSeries>[
         PieSeries<MapEntry<String, int>, String>(
           dataSource: data.entries.toList(),
@@ -182,20 +192,33 @@ class _DashboardPageState extends State<DashboardPage> {
         scrollDirection: Axis.horizontal,
         child: DataTable(
           columns: [
-            DataColumn(label: Text('Name')),
-            DataColumn(label: Text('Stage')),
-            DataColumn(label: Text('Status')),
+            DataColumn(label: Text('Nom')),
+            DataColumn(label: Text('Etape')),
+            DataColumn(label: Text('Statut')),
             DataColumn(label: Text('Sessions')),
           ],
-          rows: recentSheep
-              .map((sheep) => DataRow(cells: [
-                    DataCell(Text(sheep.name)),
-                    DataCell(Text(sheep.stage.value.capitalize())),
-                    DataCell(Text(sheep.status.value.capitalize())),
-                    DataCell(
-                        Text('${sheep.sessionsDone}/${sheep.totalSessions}')),
-                  ]))
-              .toList(),
+          rows: [
+            ...recentSheep.map(
+              (sheep) => DataRow(
+                cells: [
+                  DataCell(
+                    Text(sheep.name),
+                    onTap: () {
+                      Modular.to.pushNamed(
+                        SheepDetailPage.pageRoute(sheep.id),
+                        arguments: sheep,
+                      );
+                    },
+                  ),
+                  DataCell(Text(sheep.stage.value.capitalize())),
+                  DataCell(Text(sheep.status.value.capitalize())),
+                  DataCell(
+                    Text('${sheep.sessionsDone}/${sheep.totalSessions}'),
+                  ),
+                ],
+              ),
+            ),
+          ],
         ),
       ),
     );

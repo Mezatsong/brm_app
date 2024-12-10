@@ -1,3 +1,4 @@
+import 'package:brm/core/utils/strings.dart';
 import 'package:flutter/material.dart';
 
 import '../../../../../domain/entities/enums/e_sheep_stage.dart';
@@ -98,7 +99,9 @@ class _ActivitiesFormState extends State<ActivitiesForm> {
           items: ESheepSurveyStatus.values
               .map((surveyStatus) => DropdownMenuItem(
                     value: surveyStatus,
-                    child: Text(surveyStatus.value),
+                    child: Text(
+                      surveyStatus.value.replaceAll('_', ' ').capitalize(),
+                    ),
                   ))
               .toList(),
           onChanged: (value) {

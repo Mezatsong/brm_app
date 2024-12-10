@@ -18,11 +18,15 @@ class _SheepListItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final dtF = DateFormat('E dd MMM yyyy, hh:mm');
+    final nextRdv = sheep.lastSession?.appointmentDate != null
+        ? dtF.format(sheep.lastSession!.appointmentDate)
+        : 'Aucun';
     return Card(
       margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       child: ListTile(
         title: Text(
-          '${sheep.name}, ${sheep.age}',
+          '${sheep.name.trim()}, ${sheep.age}',
           overflow: TextOverflow.fade,
           style: const TextStyle(fontWeight: FontWeight.bold),
         ),
@@ -30,9 +34,7 @@ class _SheepListItem extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text('Étape: ${sheep.stateSummary}'),
-            Text(
-              'Prochain RDV: ${sheep.lastSession?.appointmentDate ?? "Aucun"}',
-            ),
+            Text('Prochain RDV: $nextRdv'),
           ],
         ),
         trailing: _getStatusIcon(sheep.status),

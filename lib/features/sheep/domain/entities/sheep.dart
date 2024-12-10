@@ -71,6 +71,8 @@ class Sheep extends Equatable {
         text = text.replaceAll('(', '');
     }
 
+		if (text.contains('(')) text += ')';
+
     return text;
   }
 

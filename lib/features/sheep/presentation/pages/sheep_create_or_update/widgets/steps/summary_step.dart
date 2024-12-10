@@ -12,7 +12,7 @@ class SummaryStep extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final textTheme = Theme.of(context).textTheme;
-    final titleStyle = TextStyle(fontWeight: FontWeight.bold, fontSize: 20);
+    final titleStyle = TextStyle(fontWeight: FontWeight.bold, fontSize: 16);
     final labelStyle =
         textTheme.titleMedium?.copyWith(decoration: TextDecoration.underline);
     return Column(
@@ -58,7 +58,7 @@ class SummaryStep extends StatelessWidget {
           ],
         )),
         SizedBox(height: 16),
-        Text('Details sur le fournisseur:', style: titleStyle),
+        Text('Details fournisseur:', style: titleStyle),
         Text.rich(TextSpan(
           children: [
             TextSpan(text: 'Nom: ', style: labelStyle),
@@ -78,7 +78,7 @@ class SummaryStep extends StatelessWidget {
           ],
         )),
         SizedBox(height: 16),
-        Text('Details sur le chercheur:', style: titleStyle),
+        Text('Details chercheur:', style: titleStyle),
         Text.rich(TextSpan(
           children: [
             TextSpan(text: 'Nom: ', style: labelStyle),

@@ -30,7 +30,7 @@ class PersonalInfoForm extends StatelessWidget {
           StatefulBuilder(
             builder: (context, setState) => SwitchListTile(
               title: Text(
-                'Numéro disponible aussi sur WhatsApp',
+                'WhatsApp ?',
                 softWrap: true,
                 maxLines: 2,
                 overflow: TextOverflow.ellipsis,
