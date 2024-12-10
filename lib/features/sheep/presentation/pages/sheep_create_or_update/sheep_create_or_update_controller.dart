@@ -132,28 +132,28 @@ class SheepCreateOrUpdateController extends ScreenController {
     return [
       // Personal Info Step
       Step(
-        title: Text('Personal Info'),
+        title: Text('Infos. Personelle'),
         content: PersonalInfoForm(this),
         isActive: _currentStep >= 0,
         state: _currentStep > 0 ? StepState.complete : StepState.indexed,
       ),
       // Provider and Finder Step
       Step(
-        title: Text('Provider & Finder Details'),
+        title: Text('Details Fournisseur & Chercheur'),
         content: ProviderAndFinderForm(this),
         isActive: _currentStep >= 1,
         state: _currentStep > 1 ? StepState.complete : StepState.indexed,
       ),
       // Activities Step
       Step(
-        title: Text('Activities'),
+        title: Text('Activités'),
         content: ActivitiesForm(this),
         isActive: _currentStep >= 2,
         state: _currentStep > 2 ? StepState.complete : StepState.indexed,
       ),
       // Summary and Submit Step
       Step(
-        title: Text('Summary'),
+        title: Text('Résumé'),
         content: SummaryStep(this),
         isActive: _currentStep >= 3,
         state: _currentStep >= 3 ? StepState.complete : StepState.indexed,
@@ -248,14 +248,11 @@ class SheepCreateOrUpdateController extends ScreenController {
           ),
         ),
       );
-      if (Modular.to.canPop()) {
-        Modular.to.pop();
-      } else {
-        Modular.to.pushNamed(
-          HomePage.pageRoute,
-          arguments: HomePageArguments.sheepList,
-        );
-      }
+
+      Modular.to.popAndPushNamed(
+        HomePage.pageRoute,
+        arguments: HomePageArguments.sheepList,
+      );
     });
   }
 }

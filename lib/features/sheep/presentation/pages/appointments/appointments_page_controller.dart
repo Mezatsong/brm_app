@@ -10,11 +10,9 @@ import 'widgets/appointments_filter_bottom_sheet.dart';
 import 'widgets/date_range_filter_bottom_sheet.dart';
 
 class AppointmentsPageController extends ScreenController {
-  final List<Session> _allSessions;
+  AppointmentsPageController(super.state);
 
-  AppointmentsPageController(super.state, this._allSessions);
-
-  DateTimeRange? _selectedDateRange;
+  late DateTimeRange _selectedDateRange;
 
   DateTime _focusedDay = DateTime.now();
   DateTime? _selectedDay;
@@ -23,10 +21,25 @@ class AppointmentsPageController extends ScreenController {
 
   DateTime get focusedDay => _focusedDay;
 
-  DateTimeRange? get selectedDateRange => _selectedDateRange;
+  DateTime? get selectedDay => _selectedDay;
+
+  DateTimeRange get selectedDateRange => _selectedDateRange;
+
+  @override
+  @protected
+  void onInit() {
+    onSelectDateRange(DateTime.now());
+  }
 
   List<Session> getFilteredSessions() {
-    return _allSessions.where((session) {
+    final data = BlocProvider.of<AppointmentsCubit>(context).state.data ?? [];
+    return data.where((session) {
+      // Filter by selected day
+      if (_selectedDay != null &&
+          _selectedDay?.difference(session.appointmentDate).inDays != 0) {
+        return false;
+      }
+
       // Filter by date
       bool matchesDate = session.appointmentDate.year == _focusedDay.year &&
           session.appointmentDate.month == _focusedDay.month;
@@ -73,20 +86,42 @@ class AppointmentsPageController extends ScreenController {
       });
 
       BlocProvider.of<AppointmentsCubit>(context).loadAppointments(
-        startDate: _selectedDateRange?.start,
-        endDate: _selectedDateRange?.end,
+        startDate: _selectedDateRange.start,
+        endDate: _selectedDateRange.end,
       );
     }
   }
 
-  void onDaySelected(DateTime selectedDay, DateTime focusedDay) {
-    if (!isSameDay(selectedDay, _selectedDay)) {
-      updateUI(() {
-        _selectedDay = selectedDay;
-        _focusedDay = _focusedDay;
-      });
-    }
+  void onSelectDateRange(DateTime anyWeekDay) {
+    _selectedDateRange = DateTimeRange(
+      start: anyWeekDay.subtract(
+        Duration(days: anyWeekDay.weekday - DateTime.monday),
+      ),
+      end: anyWeekDay.add(Duration(days: DateTime.sunday - anyWeekDay.weekday)),
+    );
+    BlocProvider.of<AppointmentsCubit>(context).loadAppointments(
+      startDate: _selectedDateRange.start,
+      endDate: _selectedDateRange.end,
+    );
+    updateUI(() => _focusedDay = anyWeekDay);
   }
 
-  bool selectedDayPredicate(DateTime day) => isSameDay(_selectedDay, day);
+  void onDaySelected(DateTime selectedDay, DateTime focusedDay) {
+    updateUI(() {
+      _selectedDay = isSameDay(selectedDay, _selectedDay) ? null : selectedDay;
+      _focusedDay = _focusedDay;
+    });
+  }
+
+  bool selectedDayPredicate(DateTime day) {
+    final snap = BlocProvider.of<AppointmentsCubit>(context).state;
+    final days = snap.data?.map((e) => e.appointmentDate).toList();
+    if (days != null) {
+      for (final dayItem in days) {
+        if (isSameDay(dayItem, day)) return true;
+      }
+    }
+
+    return false;
+  }
 }

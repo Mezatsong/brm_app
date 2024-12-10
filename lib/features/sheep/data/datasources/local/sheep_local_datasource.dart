@@ -3,6 +3,7 @@ import '../../../../../core/error/failures.dart';
 import '../../../domain/entities/enums/e_sheep_stage.dart';
 import '../../../domain/entities/enums/e_sheep_status.dart';
 import '../../../domain/entities/enums/e_sheep_survey_status.dart';
+import '../../../domain/entities/sheep_dashboard_data.dart';
 import '../../models/sheep_model.dart';
 import '../../models/session_model.dart';
 import 'drift/database.dart';
@@ -19,8 +20,10 @@ abstract class SheepLocalDataSource {
     int? offset,
   );
 
-  Future<List<SessionModel>> getWeeklySessions(
-      {DateTime? startDate, DateTime? endDate});
+  Future<List<SessionModel>> getWeeklySessions({
+    DateTime? startDate,
+    DateTime? endDate,
+  });
 
   Future<SheepModel> getSheepById(int id);
   Future<void> addSheep(SheepModel sheep);
@@ -29,6 +32,8 @@ abstract class SheepLocalDataSource {
   Future<List<SessionModel>> getSheepSessions(int sheepId);
   Future<void> addSession(SessionModel session);
   Future<void> updateSession(SessionModel session);
+  Future<SheepDashboardData> getDashboardData();
+  Future<List<SheepModel>> getRecentSheeps(int limit);
 }
 
 class SheepLocalDataSourceImpl implements SheepLocalDataSource {
@@ -60,19 +65,21 @@ class SheepLocalDataSourceImpl implements SheepLocalDataSource {
     int? offset,
   ) async {
     try {
+      final currentDate = DateTime.now();
       final selectStmt = db.select(db.sheepTable).join([
         // Left join with sessions to get the last session
         leftOuterJoin(
           db.sessionTable,
-          db.sessionTable.sheepId.equalsExp(db.sheepTable.id),
-          useColumns: false,
-        )
+          db.sessionTable.sheepId.equalsExp(db.sheepTable.id) &
+              db.sessionTable.appointmentDate.isBiggerOrEqualValue(currentDate),
+        ),
       ]);
 
       if (query.isNotEmpty) {
         // Filter by name (case-insensitive)
-        selectStmt
-            .where(db.sheepTable.name.lower().contains(query.toLowerCase()));
+        selectStmt.where(
+          db.sheepTable.name.lower().contains(query.toLowerCase()),
+        );
       }
 
       if (status != null) {
@@ -90,20 +97,19 @@ class SheepLocalDataSourceImpl implements SheepLocalDataSource {
         selectStmt.where(db.sheepTable.surveyStatus.equals(surveyStatus.value));
       }
 
-      // if (limit != null) {
-      //   selectStmt.limit(limit, offset: offset);
-      // }
+      if (limit != null) {
+        selectStmt.limit(limit, offset: offset);
+      }
 
-      // Maintain order by creation date descending
-      // selectStmt.orderBy([(s) => OrderingTerm.desc(s.createdAt)]);
-
-      // Order sessions by date to get the most recent
       selectStmt.orderBy([
+        // D
         OrderingTerm.asc(db.sessionTable.completed),
-        OrderingTerm.desc(db.sessionTable.appointmentDate,
-            nulls: NullsOrder.last),
+        // Closest session first
+        OrderingTerm.asc(db.sessionTable.appointmentDate),
       ]);
+
       selectStmt.groupBy([db.sheepTable.id]);
+
       selectStmt.limit(1);
 
       // Transform results into Sheep objects with optional last session
@@ -127,7 +133,7 @@ class SheepLocalDataSourceImpl implements SheepLocalDataSource {
     // If no dates provided, default to current week
     final startAt = startDate ??
         DateTime.now().subtract(Duration(days: DateTime.now().weekday - 1));
-    final endAt = endDate ?? startDate!.add(Duration(days: 6));
+    final endAt = endDate ?? startAt.add(Duration(days: 6));
 
     final query = db.select(db.sessionTable).join([
       // Inner join to get sheep details for each session
@@ -162,7 +168,7 @@ class SheepLocalDataSourceImpl implements SheepLocalDataSource {
 
       final row = await query.getSingle();
 
-      final sessionRow = row.readTable(db.sessionTable);
+      final sessionRow = row.readTableOrNull(db.sessionTable);
       final sheepRow = row.readTable(db.sheepTable);
 
       return _convertToSheepModel(sheepRow, sessionRow);
@@ -297,6 +303,83 @@ class SheepLocalDataSourceImpl implements SheepLocalDataSource {
     } catch (e) {
       throw DatabaseFailure(e.toString());
     }
+  }
+
+  @override
+  Future<List<SheepModel>> getRecentSheeps(int limit) {
+    return (db.select(db.sheepTable)
+          ..orderBy([(t) => OrderingTerm.desc(t.createdAt)])
+          ..limit(limit))
+        .get()
+        .then((rows) => rows.map(_convertToSheepModel).toList());
+  }
+
+  @override
+  Future<SheepDashboardData> getDashboardData() async {
+    // Fetch total sheep
+    final totalSheep =
+        await (db.select(db.sheepTable)).get().then((list) => list.length);
+
+    // Fetch stage distribution
+    final stageDistribution = await (() async {
+      final results = await db
+          .customSelect(
+              'SELECT stage, COUNT(*) as count FROM sheep_table GROUP BY stage')
+          .get();
+
+      return <String, int>{
+        for (final row in results) row.read('stage'): row.read('count')
+      };
+    })();
+
+    // Fetch status distribution
+    final statusDistribution = await (() async {
+      final results = await db
+          .customSelect(
+            'SELECT status, COUNT(*) as count FROM sheep_table GROUP BY status',
+          )
+          .get();
+
+      return <String, int>{
+        for (final row in results) row.read('status'): row.read('count')
+      };
+    })();
+
+    // Fetch monthly growth
+    final monthlyGrowth = await (() async {
+      final results = await db
+          .customSelect(
+            "SELECT strftime('%Y-%m', datetime(created_at, 'unixepoch')) as month, COUNT(*) as count FROM sheep_table GROUP BY month ORDER BY month",
+          )
+          .get();
+
+      return <String, int>{
+        for (final row in results) row.read('month'): row.read('count')
+      };
+    })();
+
+    // Fetch total and completed sessions
+    final sessionStats = await (() async {
+      final results = await db
+          .customSelect(
+              'SELECT COUNT(*) as total, SUM(CASE WHEN completed = 1 THEN 1 ELSE 0 END) as completed FROM session_table')
+          .get()
+          .then((rows) => rows.first);
+
+      return <String, int>{
+        'total': results.read('total'),
+        'completed': results.read('completed')
+      };
+    })();
+
+    return SheepDashboardData(
+      totalSheep: totalSheep,
+      stageDistribution: stageDistribution,
+      statusDistribution: statusDistribution,
+      monthlyGrowth: monthlyGrowth,
+      totalSessions: sessionStats['total'] ?? 0,
+      completedSessions: sessionStats['completed'] ?? 0,
+    );
   }
 
   SessionModel _convertToSessionModel(

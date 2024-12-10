@@ -7,7 +7,7 @@ class AppointmentsCubit extends Cubit<AsyncSnapshot<List<Session>>> {
   final GetWeeklySessionsUseCase _getWeeklySessionsUseCase;
 
   AppointmentsCubit(this._getWeeklySessionsUseCase)
-      : super(const AsyncSnapshot.nothing());
+      : super(const AsyncSnapshot.waiting());
 
   Future<void> loadAppointments({
     DateTime? startDate,

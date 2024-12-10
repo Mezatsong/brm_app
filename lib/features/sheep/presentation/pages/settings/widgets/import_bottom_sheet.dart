@@ -6,8 +6,8 @@ import 'package:flutter_modular/flutter_modular.dart';
 class ImportBottomSheet extends StatefulWidget {
   const ImportBottomSheet._();
 
-  static void show(BuildContext context) {
-    showModalBottomSheet(
+  static Future<void> show(BuildContext context) {
+    return showModalBottomSheet(
       context: context,
       builder: (context) => ImportBottomSheet._(),
     );

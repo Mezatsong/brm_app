@@ -1,10 +1,12 @@
 import 'package:brm/core/utils/strings.dart';
 import 'package:brm/features/sheep/domain/entities/enums/e_sheep_stage.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_modular/flutter_modular.dart';
 import 'package:intl/intl.dart';
 
 import '../../../../domain/entities/session.dart';
 import '../../../../domain/entities/sheep.dart';
+import '../../../../domain/usecases/update_session_use_case.dart';
 import '../../../helpers/appointment_helpers.dart';
 
 class AppointmentDetailsBottomSheet extends StatefulWidget {
@@ -76,7 +78,7 @@ class _AppointmentDetailsBottomSheetState
     }
   }
 
-  void _updateAppointment() {
+  void _updateAppointment() async {
     // Create updated Session object
     final updatedSession = Session(
       id: widget.session.id,
@@ -90,20 +92,23 @@ class _AppointmentDetailsBottomSheetState
       sheep: widget.session.sheep,
     );
 
-    // TODO: Implement update logic in your repository
-    // For example:
-    // _sessionRepository.updateSession(updatedSession)
-    //   .then((_) {
-    //     Navigator.pop(context, updatedSession);
-    //   })
-    //   .catchError((error) {
-    //     ScaffoldMessenger.of(context).showSnackBar(
-    //       SnackBar(content: Text('Failed to update appointment: $error'))
-    //     );
-    //   });
+    final result = await Modular.get<UpdateSessionUseCase>().call(
+      UpdateSessionParams(session: updatedSession),
+    );
 
-    // For now, just pop with the updated session
-    Navigator.pop(context, updatedSession);
+    result.fold((failure) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            failure.message, // "L'Opération a échoué"
+            style: TextStyle(color: Colors.white),
+          ),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }, (_) {
+      Navigator.pop(context, updatedSession);
+    });
   }
 
   void _deleteAppointment() {
@@ -171,17 +176,28 @@ class _AppointmentDetailsBottomSheetState
             const SizedBox(height: 16),
 
             // Sheep Information
-            Row(
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Icon(Icons.person, color: Colors.grey),
-                const SizedBox(width: 8),
-                Text(
-                  'Sheep: ${widget.sheep.name}',
-                  style: Theme.of(context).textTheme.titleMedium,
+                Row(
+                  children: [
+                    const Icon(Icons.person, color: Colors.grey),
+                    const SizedBox(width: 8),
+                    Text(
+                      'Brebis: ${widget.sheep.name}, ${widget.sheep.age}',
+                      style: Theme.of(context).textTheme.titleMedium,
+                    ),
+                  ],
                 ),
-                Text(
-                  'Etat: ${widget.sheep.stateSummary}',
-                  style: Theme.of(context).textTheme.titleMedium,
+                Row(
+                  children: [
+                    const Icon(Icons.info, color: Colors.grey),
+                    const SizedBox(width: 8),
+                    Text(
+                      'Etat: ${widget.sheep.stateSummary}',
+                      style: Theme.of(context).textTheme.titleMedium,
+                    ),
+                  ],
                 ),
               ],
             ),
@@ -259,24 +275,32 @@ class _AppointmentDetailsBottomSheetState
                 Expanded(
                   child: ElevatedButton.icon(
                     onPressed: _updateAppointment,
-                    icon: const Icon(Icons.save),
-                    label: const Text('Mettre à jour'),
+                    icon: const Icon(Icons.save, color: Colors.white),
+                    label: const Text(
+                      'Mettre à jour',
+                      style: TextStyle(color: Colors.white),
+                    ),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.green,
                     ),
                   ),
                 ),
                 const SizedBox(width: 16),
+                // TODO:
+                /*
                 Expanded(
                   child: ElevatedButton.icon(
                     onPressed: _deleteAppointment,
-                    icon: const Icon(Icons.delete),
-                    label: const Text('Supprimer'),
+                    icon: const Icon(Icons.delete, color: Colors.white),
+                    label: const Text(
+                      'Supprimer',
+                      style: TextStyle(color: Colors.white),
+                    ),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.red,
                     ),
                   ),
-                ),
+                ), */
               ],
             ),
             const SizedBox(height: 16),

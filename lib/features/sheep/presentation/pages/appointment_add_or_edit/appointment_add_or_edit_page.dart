@@ -22,7 +22,7 @@ class AppointmentAddOrEditPage extends StatelessWidget {
   final Sheep sheep;
   final Session? editingSession;
 
-  static String pageRoute = 'appointment_add_or_edit';
+  static String pageRoute = '/appointment_add_or_edit';
 
   AppointmentAddOrEditPage(
     AppointmentAddOrEditPageArgs args, {
@@ -34,7 +34,9 @@ class AppointmentAddOrEditPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('New Appointment for ${sheep.name}'),
+        title: Text(
+          '${editingSession == null ? "Nouveau" : "Editer un"} RDV pour ${sheep.name}',
+        ),
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16.0),
@@ -55,7 +57,10 @@ class AppointmentAddOrEditPage extends StatelessWidget {
                       children: [
                         Text(
                           'Details sur la brebis',
-                          style: Theme.of(context).textTheme.titleMedium,
+                          style: Theme.of(context)
+                              .textTheme
+                              .titleMedium
+                              ?.copyWith(fontWeight: FontWeight.bold),
                         ),
                         const SizedBox(height: 10),
                         Text('Nom & Age: ${sheep.name}, ${sheep.age}'),

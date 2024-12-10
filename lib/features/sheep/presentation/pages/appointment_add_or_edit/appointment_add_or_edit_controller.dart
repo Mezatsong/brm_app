@@ -6,6 +6,7 @@ import 'package:flutter_screen_controller/flutter_screen_controller.dart';
 
 import '../../../domain/entities/session.dart';
 import '../../../domain/entities/sheep.dart';
+import '../../../domain/usecases/update_session_use_case.dart';
 import '../home/home_page.dart';
 
 class AppointmentAddOrEditController extends ScreenController {
@@ -127,9 +128,8 @@ class AppointmentAddOrEditController extends ScreenController {
           ? await Modular.get<AddSessionUseCase>().call(
               AddSessionParams(session: sessionToSave),
             )
-          : await Modular.get<AddSessionUseCase>().call(
-              // TODO put the right
-              AddSessionParams(session: sessionToSave),
+          : await Modular.get<UpdateSessionUseCase>().call(
+              UpdateSessionParams(session: sessionToSave),
             );
 
       result.fold((failure) {

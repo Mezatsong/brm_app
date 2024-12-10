@@ -94,7 +94,7 @@ class _ActivitiesFormState extends State<ActivitiesForm> {
         // Survey Status
         DropdownButtonFormField<ESheepSurveyStatus>(
           value: widget._ctrl.surveyStatus,
-          decoration: InputDecoration(labelText: 'Survey Status'),
+          decoration: InputDecoration(labelText: 'Status sondage'),
           items: ESheepSurveyStatus.values
               .map((surveyStatus) => DropdownMenuItem(
                     value: surveyStatus,
@@ -111,7 +111,7 @@ class _ActivitiesFormState extends State<ActivitiesForm> {
         // Abandon Reason (only if status is abandoned)
         if (widget._ctrl.status == ESheepStatus.abandoned) ...[
           TextFormField(
-            decoration: InputDecoration(labelText: 'Abandon Reason'),
+            decoration: InputDecoration(labelText: "Raison de l'abandon"),
             onChanged: (value) {
               setState(() {
                 widget._ctrl.abandonReason = value;
@@ -119,7 +119,7 @@ class _ActivitiesFormState extends State<ActivitiesForm> {
             },
           ),
           TextFormField(
-            decoration: InputDecoration(labelText: 'Abandon Details'),
+            decoration: InputDecoration(labelText: "Details sur l'abandon"),
             onChanged: (value) {
               setState(() {
                 widget._ctrl.abandonDetails = value;

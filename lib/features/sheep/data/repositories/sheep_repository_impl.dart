@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'dart:typed_data';
+import 'package:brm/features/sheep/domain/entities/sheep_dashboard_data.dart';
 import 'package:dartz/dartz.dart';
 import 'package:excel/excel.dart';
 import 'package:flutter/material.dart';
@@ -134,7 +135,7 @@ class SheepRepositoryImpl implements SheepRepository {
   @override
   Future<Either<Failure, void>> addSession(Session session) async {
     try {
-      await localDataSource.addSession(session as SessionModel);
+      await localDataSource.addSession(SessionModel.fromSession(session));
       return const Right(null);
     } catch (e, s) {
       debugPrintStack(label: e.toString(), stackTrace: s);
@@ -145,7 +146,7 @@ class SheepRepositoryImpl implements SheepRepository {
   @override
   Future<Either<Failure, void>> updateSession(Session session) async {
     try {
-      await localDataSource.updateSession(session as SessionModel);
+      await localDataSource.updateSession(SessionModel.fromSession(session));
       return const Right(null);
     } catch (e, s) {
       debugPrintStack(label: e.toString(), stackTrace: s);
@@ -272,6 +273,28 @@ class SheepRepositoryImpl implements SheepRepository {
       }
 
       return const Right(null);
+    } catch (e, s) {
+      debugPrintStack(label: e.toString(), stackTrace: s);
+      return Left(DatabaseFailure(e.toString()));
+    }
+  }
+
+  @override
+  Future<Either<Failure, SheepDashboardData>> getDashboardData() async {
+    try {
+      final data = await localDataSource.getDashboardData();
+      return Right(data);
+    } catch (e, s) {
+      debugPrintStack(label: e.toString(), stackTrace: s);
+      return Left(DatabaseFailure(e.toString()));
+    }
+  }
+
+  @override
+  Future<Either<Failure, List<SheepModel>>> getRecentSheeps(int limit) async {
+    try {
+      final data = await localDataSource.getRecentSheeps(limit);
+      return Right(data);
     } catch (e, s) {
       debugPrintStack(label: e.toString(), stackTrace: s);
       return Left(DatabaseFailure(e.toString()));

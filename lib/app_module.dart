@@ -1,4 +1,5 @@
 import 'package:brm/features/sheep/domain/entities/sheep.dart';
+import 'package:brm/features/sheep/domain/usecases/get_recent_sheep_use_case.dart';
 import 'package:flutter_modular/flutter_modular.dart';
 import 'features/sheep/data/datasources/local/drift/database.dart';
 import 'features/sheep/data/datasources/local/sheep_local_datasource.dart';
@@ -9,6 +10,7 @@ import 'features/sheep/domain/usecases/add_session_use_case.dart';
 import 'features/sheep/domain/usecases/add_sheep_use_case.dart';
 import 'features/sheep/domain/usecases/export_to_excel_use_case.dart';
 import 'features/sheep/domain/usecases/get_all_sheep_use_case.dart';
+import 'features/sheep/domain/usecases/get_dashboard_data_use_case.dart';
 import 'features/sheep/domain/usecases/get_sheep_by_id_use_case.dart';
 import 'features/sheep/domain/usecases/get_sheep_sessions_use_case.dart';
 import 'features/sheep/domain/usecases/get_weekly_sessions_use_case.dart';
@@ -29,18 +31,20 @@ class AppModule extends Module {
     i.addSingleton<SheepRepository>(SheepRepositoryImpl.new);
 
     // Usecases
+    i.addLazySingleton(AbandonSheepUseCase.new);
+    i.addLazySingleton(AddSessionUseCase.new);
+    i.addLazySingleton(AddSheepUseCase.new);
+    i.addLazySingleton(ExportToExcelUseCase.new);
     i.addLazySingleton(GetAllSheepUseCase.new);
-    i.addLazySingleton(SearchSheepWithFiltersUseCase.new);
+    i.addLazySingleton(GetDashboardDataUseCase.new);
+    i.addLazySingleton(GetRecentSheepUseCase.new);
     i.addLazySingleton(GetSheepByIdUseCase.new);
     i.addLazySingleton(GetWeeklySessionsUseCase.new);
-    i.addLazySingleton(AddSheepUseCase.new);
-    i.addLazySingleton(UpdateSheepUseCase.new);
-    i.addLazySingleton(AbandonSheepUseCase.new);
     i.addLazySingleton(GetSheepSessionsUseCase.new);
-    i.addLazySingleton(AddSessionUseCase.new);
-    i.addLazySingleton(UpdateSessionUseCase.new);
-    i.addLazySingleton(ExportToExcelUseCase.new);
     i.addLazySingleton(ImportFromExcelUseCase.new);
+    i.addLazySingleton(UpdateSessionUseCase.new);
+    i.addLazySingleton(UpdateSheepUseCase.new);
+    i.addLazySingleton(SearchSheepWithFiltersUseCase.new);
   }
 
   @override

@@ -1,3 +1,4 @@
+import 'package:brm/core/utils/strings.dart';
 import 'package:brm/features/sheep/domain/usecases/get_sheep_by_id_use_case.dart';
 import 'package:brm/features/sheep/presentation/pages/appointment_add_or_edit/appointment_add_or_edit_page.dart';
 import 'package:brm/features/sheep/presentation/pages/sheep_create_or_update/sheep_create_or_update_page.dart';
@@ -20,9 +21,9 @@ class SheepDetailPage extends StatelessWidget {
   SheepDetailPage({int? sheepId, this.sheep, super.key})
       : sheepId = sheepId ?? sheep!.id;
 
-  Future<Sheep?> _future() async {
+  Future<Sheep> _future() async {
     final result = await Modular.get<GetSheepByIdUseCase>().call(sheepId);
-    return result.fold((_) => null, (s) => s);
+    return result.fold((fail) => throw fail, (s) => s);
   }
 
   String _formatPhoneNumber(String phoneNumber) {
@@ -61,186 +62,190 @@ class SheepDetailPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text('Détails de la brebis #$sheepId'),
-        actions: [
-          if (sheep != null)
-            IconButton(
-              icon: const Icon(Icons.add_alarm),
-              onPressed: () {
-                Modular.to.pushNamed(
-                  AppointmentAddOrEditPage.pageRoute,
-                  arguments: AppointmentAddOrEditPageArgs.create(sheep!),
-                );
-              },
-            ),
+    return FutureBuilder(
+      initialData: sheep,
+      future: _future(),
+      builder: (context, snap) {
+        final sheep = snap.data ?? this.sheep;
+        return Scaffold(
+          appBar: AppBar(
+            title: Text('Détails de la brebis #$sheepId'),
+            actions: [
+              if (sheep != null)
+                IconButton(
+                  icon: const Icon(Icons.add_alarm),
+                  onPressed: () {
+                    Modular.to.pushNamed(
+                      AppointmentAddOrEditPage.pageRoute,
+                      arguments: AppointmentAddOrEditPageArgs.create(sheep),
+                    );
+                  },
+                ),
 
-          IconButton(
-            icon: const Icon(Icons.edit),
-            onPressed: () {
-              Modular.to.pushNamed(
-                SheepCreateOrUpdatePage.pageRoute,
-                arguments: sheep,
+              if (sheep != null)
+                IconButton(
+                  icon: const Icon(Icons.edit),
+                  onPressed: () {
+                    Modular.to.pushNamed(
+                      SheepCreateOrUpdatePage.pageRoute,
+                      arguments: sheep,
+                    );
+                  },
+                ),
+
+              // Abandon button (only if not already abandoned)
+              if (sheep?.status != ESheepStatus.abandoned)
+                IconButton(
+                  icon: const Icon(Icons.warning_amber_rounded),
+                  color: Colors.red,
+                  onPressed: () => AbandonSheepBottomSheet.show(
+                    context,
+                    sheepId,
+                    sheep,
+                  ),
+                ),
+            ],
+          ),
+          body: Builder(
+            builder: (context) {
+              if (sheep == null) {
+                if (snap.hasError) {
+                  return Center(child: Text('Un problème est survenue'));
+                }
+                return const Center(child: CircularProgressIndicator());
+              }
+
+              return ListView(
+                padding: const EdgeInsets.all(16),
+                children: [
+                  // Header with Status and Stage
+                  _buildStatusHeader(sheep),
+
+                  const SizedBox(height: 16),
+
+                  // Personal Information Section
+                  _buildSectionCard(
+                    title: 'Informations sur la Brebis',
+                    icon: Icons.person,
+                    children: [
+                      _buildDetailRow('Nom', sheep.name),
+                      _buildDetailRow('Âge', '${sheep.age} ans'),
+                      _buildDetailRow('Adresse', sheep.address),
+                    ],
+                  ),
+
+                  const SizedBox(height: 16),
+
+                  // Contact Information Section
+                  _buildSectionCard(
+                    title: 'Coordonnées de la Brebis',
+                    icon: Icons.phone,
+                    children: [
+                      InkWell(
+                        onTap: () => _handlePhoneTapped(
+                          sheep.phoneNumber,
+                          sheep.isWhatsAppNumber,
+                        ),
+                        child: _buildContactRow(
+                          'Numéro de téléphone',
+                          sheep.phoneNumber,
+                          sheep.isWhatsAppNumber ? '(WhatsApp)' : '',
+                        ),
+                      ),
+                    ],
+                  ),
+
+                  const SizedBox(height: 16),
+
+                  // Provider Information Section
+                  _buildSectionCard(
+                    title: 'Informations du Fournisseur',
+                    icon: Icons.business,
+                    children: [
+                      _buildDetailRow('Nom', sheep.providerName),
+                      InkWell(
+                        onTap: () => _handlePhoneTapped(sheep.providerPhone),
+                        child:
+                            _buildDetailRow('Téléphone', sheep.providerPhone),
+                      ),
+                      _buildDetailRow('Relation', sheep.relationWithProvider),
+                    ],
+                  ),
+
+                  const SizedBox(height: 16),
+
+                  // Finder Information Section
+                  _buildSectionCard(
+                    title: 'Informations du Chercheur',
+                    icon: Icons.person_search,
+                    children: [
+                      _buildDetailRow('Nom', sheep.finderName),
+                      InkWell(
+                        onTap: () => _handlePhoneTapped(sheep.finderPhone),
+                        child: _buildDetailRow('Téléphone', sheep.finderPhone),
+                      ),
+                    ],
+                  ),
+
+                  const SizedBox(height: 16),
+
+                  // Project Progress Section
+                  _buildSectionCard(
+                    title: 'Progression',
+                    icon: Icons.timeline,
+                    children: [
+                      _buildProgressRow(
+                        'Témoingnages',
+                        '${sheep.sessionsDone} / ${sheep.totalSessions}',
+                        sheep.sessionsDone / sheep.totalSessions,
+                      ),
+                      _buildProgressRow(
+                        'Sessions d\'arrosage',
+                        '${sheep.wateringSessionsDone} / ${AppConstants.wateringtotalSessions}',
+                        sheep.wateringSessionsDone /
+                            AppConstants.wateringtotalSessions,
+                      ),
+                    ],
+                  ),
+
+                  // Abandonment Details (if applicable)
+                  if (sheep.status == ESheepStatus.abandoned) ...[
+                    const SizedBox(height: 16),
+                    _buildSectionCard(
+                      title: 'Détails de l\'abandon',
+                      icon: Icons.warning,
+                      children: [
+                        _buildDetailRow(
+                          'Raison',
+                          sheep.abandonReason ?? 'Non spécifié',
+                        ),
+                        _buildDetailRow(
+                          'Détails',
+                          sheep.abandonDetails ?? 'Aucun détail',
+                        ),
+                      ],
+                    ),
+                  ],
+
+                  const SizedBox(height: 16),
+
+                  // Metadata Section
+                  _buildSectionCard(
+                    title: 'Métadonnées',
+                    icon: Icons.info_outline,
+                    children: [
+                      _buildDetailRow(
+                        'Date de création',
+                        DateFormat.yMMMMd('fr_FR').format(sheep.createdAt),
+                      ),
+                    ],
+                  ),
+                ],
               );
             },
           ),
-
-          // Abandon button (only if not already abandoned)
-          if (sheep?.status != ESheepStatus.abandoned)
-            IconButton(
-              icon: const Icon(Icons.warning_amber_rounded),
-              color: Colors.red,
-              onPressed: () => AbandonSheepBottomSheet.show(
-                context,
-                sheepId,
-                sheep,
-              ),
-            ),
-        ],
-      ),
-      body: FutureBuilder(
-        initialData: sheep,
-        future: _future(),
-        builder: (context, snap) {
-          if (!snap.hasData &&
-              snap.connectionState == ConnectionState.waiting) {
-            return const Center(child: CircularProgressIndicator());
-          }
-
-          if (!snap.hasData && snap.hasError) {
-            return Center(child: Text('Un problème est survenue'));
-          }
-
-          final sheep = snap.data!;
-          return ListView(
-            padding: const EdgeInsets.all(16),
-            children: [
-              // Header with Status and Stage
-              _buildStatusHeader(sheep),
-
-              const SizedBox(height: 16),
-
-              // Personal Information Section
-              _buildSectionCard(
-                title: 'Informations sur la Brebis',
-                icon: Icons.person,
-                children: [
-                  _buildDetailRow('Nom', sheep.name),
-                  _buildDetailRow('Âge', '${sheep.age} ans'),
-                  _buildDetailRow('Adresse', sheep.address),
-                ],
-              ),
-
-              const SizedBox(height: 16),
-
-              // Contact Information Section
-              _buildSectionCard(
-                title: 'Coordonnées de la Brebis',
-                icon: Icons.phone,
-                children: [
-                  InkWell(
-                    onTap: () => _handlePhoneTapped(
-                      sheep.phoneNumber,
-                      sheep.isWhatsAppNumber,
-                    ),
-                    child: _buildContactRow(
-                      'Numéro de téléphone',
-                      sheep.phoneNumber,
-                      sheep.isWhatsAppNumber ? '(WhatsApp)' : '',
-                    ),
-                  ),
-                ],
-              ),
-
-              const SizedBox(height: 16),
-
-              // Provider Information Section
-              _buildSectionCard(
-                title: 'Informations du Fournisseur',
-                icon: Icons.business,
-                children: [
-                  _buildDetailRow('Nom', sheep.providerName),
-                  InkWell(
-                    onTap: () => _handlePhoneTapped(sheep.providerPhone),
-                    child: _buildDetailRow('Téléphone', sheep.providerPhone),
-                  ),
-                  _buildDetailRow('Relation', sheep.relationWithProvider),
-                ],
-              ),
-
-              const SizedBox(height: 16),
-
-              // Finder Information Section
-              _buildSectionCard(
-                title: 'Informations du Chercheur',
-                icon: Icons.person_search,
-                children: [
-                  _buildDetailRow('Nom', sheep.finderName),
-                  InkWell(
-                    onTap: () => _handlePhoneTapped(sheep.finderPhone),
-                    child: _buildDetailRow('Téléphone', sheep.finderPhone),
-                  ),
-                ],
-              ),
-
-              const SizedBox(height: 16),
-
-              // Project Progress Section
-              _buildSectionCard(
-                title: 'Progression',
-                icon: Icons.timeline,
-                children: [
-                  _buildProgressRow(
-                    'Témoingnages',
-                    '${sheep.sessionsDone} / ${sheep.totalSessions}',
-                    sheep.sessionsDone / sheep.totalSessions,
-                  ),
-                  _buildProgressRow(
-                    'Sessions d\'arrosage',
-                    '${sheep.wateringSessionsDone} / ${AppConstants.wateringtotalSessions}',
-                    sheep.wateringSessionsDone /
-                        AppConstants.wateringtotalSessions,
-                  ),
-                ],
-              ),
-
-              // Abandonment Details (if applicable)
-              if (sheep.status == ESheepStatus.abandoned) ...[
-                const SizedBox(height: 16),
-                _buildSectionCard(
-                  title: 'Détails de l\'abandon',
-                  icon: Icons.warning,
-                  children: [
-                    _buildDetailRow(
-                      'Raison',
-                      sheep.abandonReason ?? 'Non spécifié',
-                    ),
-                    _buildDetailRow(
-                      'Détails',
-                      sheep.abandonDetails ?? 'Aucun détail',
-                    ),
-                  ],
-                ),
-              ],
-
-              const SizedBox(height: 16),
-
-              // Metadata Section
-              _buildSectionCard(
-                title: 'Métadonnées',
-                icon: Icons.info_outline,
-                children: [
-                  _buildDetailRow(
-                    'Date de création',
-                    DateFormat.yMMMMd('fr_FR').format(sheep.createdAt),
-                  ),
-                ],
-              ),
-            ],
-          );
-        },
-      ),
+        );
+      },
     );
   }
 
@@ -255,7 +260,7 @@ class SheepDetailPage extends StatelessWidget {
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           Text(
-            'Statut: ${sheep.status.value.toUpperCase()}',
+            'Statut: ${sheep.status.value.capitalize()}',
             style: const TextStyle(
               color: Colors.white,
               fontWeight: FontWeight.bold,
@@ -263,7 +268,7 @@ class SheepDetailPage extends StatelessWidget {
             ),
           ),
           Text(
-            'Étape: ${sheep.stage.value.toUpperCase()}',
+            'Étape: ${sheep.stage.value.capitalize()}',
             style: const TextStyle(
               color: Colors.white,
               fontWeight: FontWeight.bold,
@@ -360,23 +365,28 @@ class SheepDetailPage extends StatelessWidget {
           const SizedBox(width: 10),
           Expanded(
             flex: 3,
-            child: Column(
-              children: [
-                FittedBox(
-                  child: Text(
-                    value,
-                    style: const TextStyle(color: Colors.black87),
-                  ),
-                ),
-                if (suffix != null)
-                  Text(
-                    suffix,
-                    style: TextStyle(
-                      color: Colors.green.shade700,
-                      fontStyle: FontStyle.italic,
+            child: Align(
+              alignment: Alignment.centerRight,
+              child: Column(
+                children: [
+                  FittedBox(
+                    child: Text(
+                      value,
+                      textAlign: TextAlign.right,
+                      style: const TextStyle(color: Colors.black87),
                     ),
                   ),
-              ],
+                  if (suffix != null)
+                    Text(
+                      suffix,
+                      textAlign: TextAlign.right,
+                      style: TextStyle(
+                        color: Colors.green.shade700,
+                        fontStyle: FontStyle.italic,
+                      ),
+                    ),
+                ],
+              ),
             ),
           ),
         ],

@@ -15,16 +15,16 @@ class PersonalInfoForm extends StatelessWidget {
         children: [
           TextFormField(
             controller: _ctrl.nameController,
-            decoration: InputDecoration(labelText: 'Name'),
+            decoration: InputDecoration(labelText: 'Nom'),
             validator: (value) =>
-                value == null || value.isEmpty ? 'Please enter a name' : null,
+                value == null || value.isEmpty ? 'Svp entrer un nom' : null,
           ),
           TextFormField(
             controller: _ctrl.phoneController,
-            decoration: InputDecoration(labelText: 'Phone Number'),
+            decoration: InputDecoration(labelText: 'Téléphone'),
             keyboardType: TextInputType.phone,
             validator: (value) => value == null || value.isEmpty
-                ? 'Please enter a phone number'
+                ? 'Svp entrer un numéro de telephone'
                 : null,
           ),
           StatefulBuilder(
@@ -48,14 +48,13 @@ class PersonalInfoForm extends StatelessWidget {
             decoration: InputDecoration(labelText: 'Age'),
             keyboardType: TextInputType.number,
             validator: (value) =>
-                value == null || value.isEmpty ? 'Please enter age' : null,
+                value == null || value.isEmpty ? "Entrer l'âge" : null,
           ),
           TextFormField(
             controller: _ctrl.addressController,
-            decoration: InputDecoration(labelText: 'Address'),
-            validator: (value) => value == null || value.isEmpty
-                ? 'Please enter an address'
-                : null,
+            decoration: InputDecoration(labelText: 'Adresse'),
+            validator: (value) =>
+                value == null || value.isEmpty ? "Entrer l'adresse" : null,
           ),
         ],
       ),

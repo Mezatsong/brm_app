@@ -21,11 +21,10 @@ class _SheepListItem extends StatelessWidget {
     return Card(
       margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       child: ListTile(
-        title: FittedBox(
-          child: Text(
-            '${sheep.name}, ${sheep.age}',
-            style: const TextStyle(fontWeight: FontWeight.bold),
-          ),
+        title: Text(
+          '${sheep.name}, ${sheep.age}',
+          overflow: TextOverflow.fade,
+          style: const TextStyle(fontWeight: FontWeight.bold),
         ),
         subtitle: Column(
           crossAxisAlignment: CrossAxisAlignment.start,

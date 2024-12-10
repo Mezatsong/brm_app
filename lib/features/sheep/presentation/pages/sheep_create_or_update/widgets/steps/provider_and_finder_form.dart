@@ -13,40 +13,41 @@ class ProviderAndFinderForm extends StatelessWidget {
       children: [
         // Provider Section
         Text(
-          'Provider Details',
+          'Details sur le fournisseur',
           style: Theme.of(context).textTheme.titleMedium,
         ),
         TextFormField(
           controller: _ctrl.providerNameController,
-          decoration: InputDecoration(labelText: 'Provider Name'),
+          decoration: InputDecoration(labelText: 'Nom du fournisseur'),
           validator: (value) => value == null || value.isEmpty
-              ? 'Please enter provider name'
+              ? 'Entrer le nom du fournisseur'
               : null,
         ),
         TextFormField(
           controller: _ctrl.providerPhoneController,
-          decoration: InputDecoration(labelText: 'Provider Phone'),
+          decoration: InputDecoration(labelText: 'Tel du fournisseur'),
           keyboardType: TextInputType.phone,
           validator: (value) => value == null || value.isEmpty
-              ? 'Please enter provider phone'
+              ? 'Entrer le telephone du fournisseur'
               : null,
         ),
         TextFormField(
           controller: _ctrl.relationWithProviderController,
-          decoration: InputDecoration(labelText: 'Relation with Provider'),
+          decoration:
+              InputDecoration(labelText: 'Relation avec le fournisseur'),
           validator: (value) =>
-              value == null || value.isEmpty ? 'Please enter relation' : null,
+              value == null || value.isEmpty ? 'Champ obligatoire' : null,
         ),
 
         // Finder Section
         SizedBox(height: 16),
         Text(
-          'Finder Details',
+          'Details sur le chercheur',
           style: Theme.of(context).textTheme.titleMedium,
         ),
         StatefulBuilder(
           builder: (context, setState) => SwitchListTile(
-            title: Text('Same as Provider'),
+            title: Text('Fournisseur = chercheur'),
             value: _ctrl.sameAsPovider,
             onChanged: (bool value) {
               setState(() {
@@ -63,19 +64,19 @@ class ProviderAndFinderForm extends StatelessWidget {
         ),
         TextFormField(
           controller: _ctrl.finderNameController,
-          decoration: InputDecoration(labelText: 'Finder Name'),
+          decoration: InputDecoration(labelText: 'Nom du chercheur'),
           enabled: !_ctrl.sameAsPovider,
           validator: (value) => value == null || value.isEmpty
-              ? 'Please enter finder name'
+              ? 'Entrer le nom du chercheur'
               : null,
         ),
         TextFormField(
           controller: _ctrl.finderPhoneController,
-          decoration: InputDecoration(labelText: 'Finder Phone'),
+          decoration: InputDecoration(labelText: 'Tel duu chercheur'),
           keyboardType: TextInputType.phone,
           enabled: !_ctrl.sameAsPovider,
           validator: (value) => value == null || value.isEmpty
-              ? 'Please enter finder phone'
+              ? 'Numéro du telephone du chercheur'
               : null,
         ),
       ],

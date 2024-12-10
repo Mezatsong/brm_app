@@ -2,11 +2,13 @@ import 'dart:typed_data';
 
 import 'package:dartz/dartz.dart';
 import '../../../../core/error/failures.dart';
+import '../../data/models/sheep_model.dart';
 import '../entities/enums/e_sheep_stage.dart';
 import '../entities/enums/e_sheep_status.dart';
 import '../entities/enums/e_sheep_survey_status.dart';
 import '../entities/sheep.dart';
 import '../entities/session.dart';
+import '../entities/sheep_dashboard_data.dart';
 
 abstract class SheepRepository {
   Future<Either<Failure, List<Sheep>>> getAllSheep();
@@ -46,4 +48,8 @@ abstract class SheepRepository {
   Future<Either<Failure, void>> exportToExcel(String path);
 
   Future<Either<Failure, void>> importFromExcel(Uint8List bytes);
+
+  Future<Either<Failure, SheepDashboardData>> getDashboardData();
+
+  Future<Either<Failure, List<SheepModel>>> getRecentSheeps(int limit);
 }

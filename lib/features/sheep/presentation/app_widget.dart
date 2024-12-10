@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_modular/flutter_modular.dart';
 import '../../../core/theme/app_theme.dart';
+import 'widgets/device_auth_wrapper.dart';
 
 class AppWidget extends StatelessWidget {
   const AppWidget({super.key});
@@ -11,7 +12,11 @@ class AppWidget extends StatelessWidget {
       title: 'BRM',
       theme: MyTheme.light,
       darkTheme: MyTheme.dark,
-      routerConfig: Modular.routerConfig,
+      builder: (context, child) => DeviceAuthWrapper(child: child!),
+      routerDelegate: Modular.routerDelegate,
+      routeInformationParser: Modular.routeInformationParser,
+
+      // routerConfig: Modular.routerConfig,
       debugShowCheckedModeBanner: false,
     );
   }

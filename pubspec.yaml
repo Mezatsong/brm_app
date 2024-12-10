@@ -28,6 +28,9 @@ dependencies:
   flutter_screen_controller: ^0.0.5+1
   url_launcher: ^6.3.1
   table_calendar: ^3.1.2
+  local_auth: ^2.3.0
+  syncfusion_flutter_charts: ^27.2.5
+  fl_chart: ^0.69.2
 
 dev_dependencies:
   flutter_test:

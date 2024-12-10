@@ -6,10 +6,13 @@ import 'features/sheep/presentation/app_widget.dart';
 import 'package:intl/intl.dart';
 import 'package:intl/date_symbol_data_local.dart';
 
+import 'features/sheep/presentation/helpers/setting_service.dart';
+
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   Intl.defaultLocale = 'fr_FR';
   await initializeDateFormatting(Intl.defaultLocale);
+  await SettingService.ensureInitialized();
 
   if (kDebugMode) {
     // imageCache.clear();
@@ -18,8 +21,5 @@ Future<void> main() async {
     debugPrint = (String? message, {int? wrapWidth}) {};
   }
 
-  runApp(ModularApp(
-    module: AppModule(),
-    child: const AppWidget(),
-  ));
+  runApp(ModularApp(module: AppModule(), child: const AppWidget()));
 }

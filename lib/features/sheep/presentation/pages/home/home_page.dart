@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../appointments/appointments_page.dart';
+import '../dashboard/dashboard_page.dart';
 import '../settings/settings_page.dart';
 import '../sheep_list/sheep_list_page.dart';
 
@@ -29,7 +30,7 @@ class _HomePageState extends State<HomePage> {
   int _currentIndex = 0;
 
   final List<Widget> _pages = [
-    Container(color: Colors.blue),
+    DashboardPage(),
     SheepListPage(),
     AppointmentsPage(),
     SettingsPage(),

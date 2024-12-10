@@ -1,3 +1,4 @@
+import 'package:brm/core/utils/strings.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
@@ -10,7 +11,7 @@ class WeekViewSessionCard extends StatelessWidget {
 
   const WeekViewSessionCard({required this.session, super.key});
 
-  void onPressed(BuildContext context) {
+  void _onTap(BuildContext context) {
     final sheep = session.sheep;
     if (sheep == null) return;
     showModalBottomSheet(
@@ -48,6 +49,7 @@ class WeekViewSessionCard extends StatelessWidget {
       margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
       color: typeColors[session.type] ?? Colors.grey.shade300,
       child: ListTile(
+        onTap: () => _onTap(context),
         title: Text(
           "${session.sheep?.name ?? 'Unknown Sheep'}, ${session.sheep?.age}",
           style: const TextStyle(fontWeight: FontWeight.bold),
@@ -55,7 +57,9 @@ class WeekViewSessionCard extends StatelessWidget {
         subtitle: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('Session ${session.sessionNumber}'),
+            Text(
+              session.sheep?.stateSummary ?? session.type.value.capitalize(),
+            ),
             if (session.notes != null)
               Text(
                 session.notes!,
@@ -64,7 +68,7 @@ class WeekViewSessionCard extends StatelessWidget {
           ],
         ),
         trailing: Text(
-          DateFormat('HH:mm').format(session.appointmentDate),
+          DateFormat('E (dd MMM) à HH:mm').format(session.appointmentDate),
           style: const TextStyle(fontWeight: FontWeight.w500),
         ),
       ),

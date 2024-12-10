@@ -1,3 +1,4 @@
+import 'package:brm/core/utils/strings.dart';
 import 'package:flutter/material.dart';
 
 import '../../../../../domain/entities/enums/e_sheep_status.dart';
@@ -11,19 +12,22 @@ class SummaryStep extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final textTheme = Theme.of(context).textTheme;
+    final titleStyle = TextStyle(fontWeight: FontWeight.bold, fontSize: 20);
+    final labelStyle =
+        textTheme.titleMedium?.copyWith(decoration: TextDecoration.underline);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text('Personal Info:', style: textTheme.titleLarge),
+        Text('Infos. Personel:', style: titleStyle),
         Text.rich(TextSpan(
           children: [
-            TextSpan(text: 'Name: ', style: textTheme.titleMedium),
+            TextSpan(text: 'Nom: ', style: labelStyle),
             TextSpan(text: _ctrl.nameController.text),
           ],
         )),
         Text.rich(TextSpan(
           children: [
-            TextSpan(text: 'Phone: ', style: textTheme.titleMedium),
+            TextSpan(text: 'Telephone: ', style: labelStyle),
             TextSpan(text: _ctrl.phoneController.text),
           ],
         )),
@@ -31,7 +35,7 @@ class SummaryStep extends StatelessWidget {
           children: [
             TextSpan(
               text: 'Disponible sur WhatsApp: ',
-              style: textTheme.titleMedium,
+              style: labelStyle,
             ),
             TextSpan(
               text: _ctrl.isWhatsAppNumber ? "Oui" : "Non",
@@ -43,101 +47,103 @@ class SummaryStep extends StatelessWidget {
         )),
         Text.rich(TextSpan(
           children: [
-            TextSpan(text: 'Age: ', style: textTheme.titleMedium),
+            TextSpan(text: 'Age: ', style: labelStyle),
             TextSpan(text: _ctrl.ageController.text),
           ],
         )),
         Text.rich(TextSpan(
           children: [
-            TextSpan(text: 'Address: ', style: textTheme.titleMedium),
+            TextSpan(text: 'Adresse: ', style: labelStyle),
             TextSpan(text: _ctrl.addressController.text),
           ],
         )),
         SizedBox(height: 16),
-        Text('Provider Details:', style: textTheme.titleLarge),
+        Text('Details sur le fournisseur:', style: titleStyle),
         Text.rich(TextSpan(
           children: [
-            TextSpan(text: 'Name: ', style: textTheme.titleMedium),
+            TextSpan(text: 'Nom: ', style: labelStyle),
             TextSpan(text: _ctrl.providerNameController.text),
           ],
         )),
         Text.rich(TextSpan(
           children: [
-            TextSpan(text: 'Phone: ', style: textTheme.titleMedium),
+            TextSpan(text: 'Telephone: ', style: labelStyle),
             TextSpan(text: _ctrl.providerPhoneController.text),
           ],
         )),
         Text.rich(TextSpan(
           children: [
-            TextSpan(text: 'Relation: ', style: textTheme.titleMedium),
+            TextSpan(text: 'Relation: ', style: labelStyle),
             TextSpan(text: _ctrl.relationWithProviderController.text),
           ],
         )),
         SizedBox(height: 16),
-        Text('Finder Details:', style: textTheme.titleLarge),
+        Text('Details sur le chercheur:', style: titleStyle),
         Text.rich(TextSpan(
           children: [
-            TextSpan(text: 'Name: ', style: textTheme.titleMedium),
+            TextSpan(text: 'Nom: ', style: labelStyle),
             TextSpan(text: _ctrl.finderNameController.text),
           ],
         )),
         Text.rich(TextSpan(
           children: [
-            TextSpan(text: 'Phone: ', style: textTheme.titleMedium),
+            TextSpan(text: 'Telephone: ', style: labelStyle),
             TextSpan(text: _ctrl.finderPhoneController.text),
           ],
         )),
         SizedBox(height: 16),
-        Text('Activities:', style: textTheme.titleLarge),
+        Text('Activités:', style: titleStyle),
         Text.rich(TextSpan(
           children: [
-            TextSpan(text: 'Total Sessions: ', style: textTheme.titleMedium),
+            TextSpan(text: 'Total des sujets: ', style: labelStyle),
             TextSpan(text: _ctrl.totalSessions.toString()),
           ],
         )),
         Text.rich(TextSpan(
           children: [
-            TextSpan(text: 'Sessions Done: ', style: textTheme.titleMedium),
+            TextSpan(text: 'Sujets fait: ', style: labelStyle),
             TextSpan(text: _ctrl.sessionsDone.toString()),
           ],
         )),
         Text.rich(TextSpan(
           children: [
             TextSpan(
-              text: 'Watering Sessions Done: ',
-              style: textTheme.titleMedium,
+              text: "Sessions d'arrosage faites: ",
+              style: labelStyle,
             ),
             TextSpan(text: _ctrl.wateringSessionsDone.toString()),
           ],
         )),
         Text.rich(TextSpan(
           children: [
-            TextSpan(text: 'Status: ', style: textTheme.titleMedium),
-            TextSpan(text: _ctrl.status.value),
+            TextSpan(text: 'Status: ', style: labelStyle),
+            TextSpan(text: _ctrl.status.value.capitalize()),
           ],
         )),
         Text.rich(TextSpan(
           children: [
-            TextSpan(text: 'Stage: ', style: textTheme.titleMedium),
-            TextSpan(text: _ctrl.stage.value),
+            TextSpan(text: 'Etape: ', style: labelStyle),
+            TextSpan(text: _ctrl.stage.value.capitalize()),
           ],
         )),
         Text.rich(TextSpan(
           children: [
-            TextSpan(text: 'Survey Status: ', style: textTheme.titleMedium),
-            TextSpan(text: _ctrl.surveyStatus.value.replaceAll('_', ' ')),
+            TextSpan(text: 'Status Sondage: ', style: labelStyle),
+            TextSpan(
+              text: _ctrl.surveyStatus.value.replaceAll('_', ' ').capitalize(),
+            ),
           ],
         )),
         if (_ctrl.status == ESheepStatus.abandoned) ...[
           Text.rich(TextSpan(
             children: [
-              TextSpan(text: 'Abandon Reason: ', style: textTheme.titleMedium),
+              TextSpan(text: 'Abandon Reason: ', style: labelStyle),
               TextSpan(text: _ctrl.abandonReason ?? "N/A"),
             ],
           )),
           Text.rich(TextSpan(
             children: [
-              TextSpan(text: 'Abandon Details: ', style: textTheme.titleMedium),
+              TextSpan(text: 'Abandon Details: ', style: labelStyle),
               TextSpan(text: _ctrl.abandonDetails ?? "N/A"),
             ],
           )),

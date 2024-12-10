@@ -18,89 +18,79 @@ class AppointmentsPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
-      create: (context) {
-        return AppointmentsCubit(Modular.get())..loadAppointments();
-      },
-      child: BlocBuilder<AppointmentsCubit, AsyncSnapshot<List<Session>>>(
-        builder: (context, snap) {
-          if (snap.connectionState == ConnectionState.waiting) {
-            return Scaffold(
-              appBar: AppBar(title: const Text(AppStrings.appointments)),
-              body: const Center(child: CircularProgressIndicator()),
-            );
-          }
-
-          if (snap.hasError) {
-            return Scaffold(
-              appBar: AppBar(title: const Text(AppStrings.appointments)),
-              body: Center(child: Text(snap.error?.toString() ?? '')),
-            );
-          }
-
-          if (snap.requireData.isEmpty) {
-            return Scaffold(
-              appBar: AppBar(title: const Text(AppStrings.appointments)),
-              body: const Center(child: Text(AppStrings.noAppointments)),
-            );
-          }
-
-          return ScreenControllerBuilder(
-            create: (s) => AppointmentsPageController(s, snap.requireData),
-            builder: (context, ctrl) {
-              final filteredSessions = ctrl.getFilteredSessions();
-
-              return Scaffold(
-                appBar: AppBar(
-                  title: const Text(AppStrings.appointments),
-                  actions: [
-                    IconButton(
-                      icon: const Icon(Icons.date_range),
-                      onPressed: ctrl.openDateRangeSelector,
-                    ),
-                    const SizedBox(width: 5),
-                    IconButton(
-                      icon: const Icon(Icons.filter_list),
-                      onPressed: ctrl.showFilterBottomSheet,
-                    ),
-                  ],
+      create: (_) => AppointmentsCubit(Modular.get()),
+      child: ScreenControllerBuilder(
+        create: AppointmentsPageController.new,
+        builder: (context, ctrl) {
+          return Scaffold(
+            appBar: AppBar(
+              title: const Text(AppStrings.appointments),
+              actions: [
+                IconButton(
+                  icon: const Icon(Icons.date_range),
+                  onPressed: ctrl.openDateRangeSelector,
                 ),
-                body: Column(
+                const SizedBox(width: 5),
+                IconButton(
+                  icon: const Icon(Icons.filter_list),
+                  onPressed: ctrl.showFilterBottomSheet,
+                ),
+              ],
+            ),
+            body: BlocBuilder<AppointmentsCubit, AsyncSnapshot<List<Session>>>(
+              builder: (context, snap) {
+                final filteredSessions = ctrl.getFilteredSessions();
+                final dtF = DateFormat('E dd MMM yyyy');
+                final current = ctrl.selectedDay != null
+                    ? dtF.format(ctrl.selectedDay!)
+                    : '${dtF.format(ctrl.selectedDateRange.start)}  au  ${dtF.format(ctrl.selectedDateRange.end)}';
+
+                if (snap.connectionState == ConnectionState.waiting) {
+                  return const Center(child: CircularProgressIndicator());
+                }
+
+                if (snap.hasError) {
+                  return Center(child: Text(snap.error?.toString() ?? ''));
+                }
+
+                return Column(
                   children: [
-                    if (ctrl.selectedDateRange != null)
-                      Padding(
-                        padding: const EdgeInsets.all(8.0),
-                        child: Text(
-                          'Interval: ${DateFormat('dd MMM yyyy').format(ctrl.selectedDateRange!.start)} - ${DateFormat('dd MMM yyyy').format(ctrl.selectedDateRange!.end)}',
-                        ),
-                      ),
                     TableCalendar(
-                      firstDay: DateTime.utc(2010, 10, 16),
-                      lastDay: DateTime.utc(2030, 3, 14),
+                      firstDay: DateTime.utc(2024, 1, 1),
+                      lastDay: DateTime.utc(2030, 1, 1),
+                      currentDay: ctrl.selectedDay,
                       focusedDay: ctrl.focusedDay,
                       calendarFormat: CalendarFormat.week,
+                      startingDayOfWeek: StartingDayOfWeek.monday,
                       selectedDayPredicate: ctrl.selectedDayPredicate,
                       onDaySelected: ctrl.onDaySelected,
+                      onPageChanged: ctrl.onSelectDateRange,
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.all(10),
+                      child: Text(
+                        'RDV du $current',
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          decoration: TextDecoration.underline,
+                        ),
+                      ),
                     ),
                     Expanded(
                       child: Visibility(
-                        visible: filteredSessions.isNotEmpty,
-                        replacement: const Center(
-                          child: Text('No appointments found'),
-                        ),
+                        replacement: Text(AppStrings.noAppointments),
                         child: ListView.builder(
                           itemCount: filteredSessions.length,
-                          itemBuilder: (context, index) {
-                            return WeekViewSessionCard(
-                              session: filteredSessions[index],
-                            );
-                          },
+                          itemBuilder: (context, i) => WeekViewSessionCard(
+                            session: filteredSessions.elementAt(i),
+                          ),
                         ),
                       ),
                     ),
                   ],
-                ),
-              );
-            },
+                );
+              },
+            ),
           );
         },
       ),
